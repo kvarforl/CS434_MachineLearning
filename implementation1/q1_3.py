@@ -17,10 +17,10 @@ def calc_w(x, y):
 def calc_ase(x, y, w):
     return (1 / x.shape[0]) * sum((yi - yhati)**2 for yi in y for yhati in x @ w)
 
+
 args = get_args()
 
 featuresX = np.loadtxt(open(args.training,"rb"), delimiter=",", usecols=range(13))
-featuresX = np.insert(featuresX, 0, [1], axis=1) #add dummy column of 1s
 #print(featuresX.shape) #shape output is (rows, cols)
 
 Y = np.loadtxt(open(args.training,"rb"), delimiter=",", usecols=13)
@@ -36,7 +36,6 @@ training_ase = calc_ase(featuresX, Y, w)
 
 
 testX = np.loadtxt(open(args.test_data,"rb"), delimiter=",", usecols=range(13))
-testX = np.insert(testX, 0, [1], axis=1) #add dummy column of 1s
 testY = np.loadtxt(open(args.test_data,"rb"), delimiter=",", usecols=13)
 
 testing_ase = calc_ase(testX, testY, w)
