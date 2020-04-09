@@ -26,6 +26,17 @@ def append_cols(features, num):
         return_mat = np.insert(return_mat, cols, [np.random.normal(size=rows)], axis=1)
     return return_mat
 
+def make_plot(x, y, title):
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+    ax.set(xlabel="number of random features (d)",
+            ylabel = "Average Square Error",
+            title=title)
+    plt.xticks(np.arange(0, 22, 2));
+    fig.savefig(title.replace(" ", "_")+".png")
+    plt.show()
+
+
 args = get_args()
 
 featuresX = np.loadtxt(open(args.training,"rb"), delimiter=",", usecols=range(13))
@@ -71,14 +82,9 @@ for i in range(2,22, 2):
                         }
 
 #unpack for plotting
-ds = list(testing_data.keys())
+ds = list(testing_data.keys()) 
 testing_ases = list([x["ase"] for x in testing_data.values()])
 training_ases =list( [x["ase"] for x in training_data.values()])
 
-fig, ax = plt.subplots()
-ax.plot(ds, training_ases)
-ax.set(xlabel="number of random features (d)",
-        ylabel = "training ase")
-fig.savefig("training_ases.png")
-plt.show()
-
+make_plot(ds, testing_ases, "Testing ASEs")
+make_plot(ds, training_ases, "Training ASEs")
