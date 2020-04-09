@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
@@ -40,7 +41,7 @@ training_entry_info = {
 
 #key = d, value = (matrix with d values, learned w from matrix, ase)
 training_data = { 0: training_entry_info}
-for i in range(2,20, 2):
+for i in range(2,22, 2):
     training_entry_info = {}
     matrix = append_cols(training_data[i-2]["features"], 2)#add 2 random cols to previous random matrix
     weights = calc_w(matrix, Y)
@@ -62,11 +63,22 @@ testing_entry_info = {
 
 #key = d, value = (matrix with d values,ase)
 testing_data = { 0: testing_entry_info}
-for i in range(2,20, 2):
+for i in range(2,22, 2):
     matrix = append_cols(testing_data[i-2]["features"], 2)#add 2 random cols to previous random matrix
     ase = calc_ase(matrix, Y, training_data[i]["weights"]) #use training weight vector
     testing_data[i] = {"features": matrix,
                         "ase" : ase
                         }
 
+#unpack for plotting
+ds = list(testing_data.keys())
+testing_ases = list([x["ase"] for x in testing_data.values()])
+training_ases =list( [x["ase"] for x in training_data.values()])
+
+fig, ax = plt.subplots()
+ax.plot(ds, training_ases)
+ax.set(xlabel="number of random features (d)",
+        ylabel = "training ase")
+fig.savefig("training_ases.png")
+plt.show()
 
