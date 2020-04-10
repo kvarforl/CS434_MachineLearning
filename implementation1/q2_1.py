@@ -7,10 +7,13 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("training", help="a .csv file of training data")
     parser.add_argument("test_data", help="a .csv file of test data")
+    parser.add_argument("learning_rate", type=int)
     return parser.parse_args()
 
 
 args = get_args()
+
+lr = args.learning_rate
 
 trainX = np.loadtxt(open(args.training,"rb"), delimiter=",", usecols=range(256))
 #print(trainX.shape) #shape output is (rows, cols)
