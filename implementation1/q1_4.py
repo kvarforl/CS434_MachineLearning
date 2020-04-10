@@ -16,7 +16,7 @@ def calc_w(x, y):
 
 #assumes that yhat comes from x*w
 def calc_ase(x, y, w):
-    return (1 / x.shape[0]) * sum((yi - yhati)**2 for yi in y for yhati in x @ w)
+    return sum((y-x.dot(w))**2) / x.shape[0]
 
 #returns features matrix with num columns of np.random.normal appended
 def append_cols(features, num):
@@ -53,7 +53,6 @@ training_entry_info = {
 #key = d, value = (matrix with d values, learned w from matrix, ase)
 training_data = { 0: training_entry_info}
 for i in range(2,22, 2):
-    training_entry_info = {}
     matrix = append_cols(training_data[i-2]["features"], 2)#add 2 random cols to previous random matrix
     weights = calc_w(matrix, Y)
     ase = calc_ase(matrix, Y, weights)
@@ -76,7 +75,7 @@ testing_entry_info = {
 testing_data = { 0: testing_entry_info}
 for i in range(2,22, 2):
     matrix = append_cols(testing_data[i-2]["features"], 2)#add 2 random cols to previous random matrix
-    ase = calc_ase(matrix, Y, training_data[i]["weights"]) #use training weight vector
+    ase = calc_ase(matrix, testY, training_data[i]["weights"]) #use training weight vector
     testing_data[i] = {"features": matrix,
                         "ase" : ase
                         }

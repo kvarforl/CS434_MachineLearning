@@ -15,7 +15,7 @@ def calc_w(x, y):
 
 #assumes that yhat comes from x*w
 def calc_ase(x, y, w):
-    return (1 / x.shape[0]) * sum((yi - yhati)**2 for yi in y for yhati in x @ w)
+     return sum((y-x.dot(w))**2) / x.shape[0]
 
 args = get_args()
 
