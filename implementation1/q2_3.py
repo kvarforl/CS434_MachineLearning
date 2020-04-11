@@ -20,7 +20,7 @@ def make_plot(x, y, title):
     ax.set(xlabel="lambda",
             ylabel = "accuracy",
             title=title)
-    plt.xticks(np.arange(0, len(lambdas), (max(lambdas) - min(lambdas))/len(lambdas)));
+    #plt.xticks(np.arange(0, len(lambdas), (max(lambdas) - min(lambdas))/len(lambdas)));
     fig.savefig(title.replace(" ", "_")+".png")
     plt.show()
 
@@ -55,7 +55,7 @@ def calc_sigmoid(featureVector, w):
     return 1 / (1 + math.exp(exponential))
 
 def calc_regularization(w, lambdaValue):
-    return 0.5 * lambdaValue * np.square(np.absolute(w))
+    return 0.5 * lambdaValue * np.square(np.linalg.norm(w))
 
 def calc_w(trainX, trainY, testX, testY, lr, lambdas):
     gradientDecentIterations = 20
