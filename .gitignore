@@ -1,4 +1,4 @@
 *.png
-.vscode/*
+*.vscode/*
 *.zip
-__pychach__/*
+*__pychach__/*
