@@ -29,27 +29,25 @@ def calc_prediction(w, x):
     #outcome = w.T @ x.reshape(256, 1)
     outcome = calc_sigmoid(x, w)
     #print("outcome: ", outcome)
-    if (outcome > 0):
+    if (outcome > 0.5):
         return True
     else:
         return False
 
 
 def calc_accuracy(X, Y, w):
-    positivesActual = np.count_nonzero(Y == 1)
-    positivesCalculated = 0
-    print("positives actual: ", positivesActual)
+    matches = 0
     for i in range(len(X)):
-        if(calc_prediction(w, X[i])):
-                positivesCalculated += 1
-    print("positives calculated: ", positivesCalculated)
-    if (positivesActual == 0):
-        if (positivesCalculated == 0):
+        if(calc_prediction(w, X[i]) == Y[i]):
+                matches += 1
+    print("matches calculated: ", matches, " out of ", len(Y))
+    if (matches == 0):
+        if (len(Y) == 0):
             return 1
         else:
             return 0
     else:
-        return positivesCalculated / positivesActual
+        return matches / len(Y)
 
 
 def calc_sigmoid(featureVector, w):
@@ -64,9 +62,9 @@ def calc_w(trainX, trainY, testX, testY, lr):
     testAccuracies = []
     for _ in range(gradientDecentIterations):
         gradient = np.zeros((256, 1)) # initialize gradient vector
-        for i in range(256):
+        for i in range(len(trainY)):
             sigmoid = calc_sigmoid(trainX[i], w)
-            print("sigmoid: " + str(sigmoid))
+            #print("sigmoid: " + str(sigmoid))
             gradient = gradient + (sigmoid - trainY[i]) * trainX[i].reshape(256, 1)
 
         w = w - lr * gradient
