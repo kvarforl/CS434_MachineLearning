@@ -37,11 +37,11 @@ vectorizer = CountVectorizer(
 )
 
 # fit the vectorizer on the text
-vectorizer.fit(imdb_data['review'])
+features = vectorizer.fit_transform(imdb_data['review'])
 
 # get the vocabulary
 inv_vocab = {v: k for k, v in vectorizer.vocabulary_.items()}
 vocabulary = [inv_vocab[i] for i in range(len(inv_vocab))]
-print(vocabulary)
+
 
 
