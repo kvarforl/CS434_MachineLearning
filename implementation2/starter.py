@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 import re
 import numpy as np
@@ -64,6 +65,16 @@ validation_features = features[30000:40000 , :]
 # get the vocabulary
 inv_vocab = {v: k for k, v in vectorizer.vocabulary_.items()}
 vocabulary = [inv_vocab[i] for i in range(len(inv_vocab))]
+
+#def is_positive_review(review)
+
+# Find useful numbers
+p_positive_training = np.count_nonzero(train_labels == "positive")
+p_negative_training = np.count_nonzero(train_labels == "negative")
+p_positive_validation = np.count_nonzero(validation_labels == "positive")
+p_negative_validation = np.count_nonzero(validation_labels == "negative")
+print("training positives: ", p_positive_training)
+print("training negatives: ", p_negative_training)
 
 
 
