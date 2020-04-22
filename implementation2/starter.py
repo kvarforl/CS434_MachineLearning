@@ -61,7 +61,6 @@ vocabulary = [inv_vocab[i] for i in range(len(inv_vocab))]
 # Apply settings for part 1
 vectorizer.max_features = 2000
 
-#def is_positive_review(review)
 
 # Find useful numbers
 p_positive_training = np.count_nonzero(train_labels == "positive")
@@ -70,6 +69,36 @@ p_positive_validation = np.count_nonzero(validation_labels == "positive")
 p_negative_validation = np.count_nonzero(validation_labels == "negative")
 print("training positives: ", p_positive_training)
 print("training negatives: ", p_negative_training)
+
+def is_positive_review(review):
+    if (review[0] == "positive"):
+        return True
+    else:
+        return False
+
+def is_negative_review(review):
+    if (review[0] == "negative"):
+        return True
+    else:
+        return False
+
+# Add label column for sorting
+labeled_features_training = np.hstack((train_labels, train_features))
+labeled_features_validation = np.hstack((validation_labels, validation_features))
+
+# Filter arrays to lists of positive and negative reviews
+positive_features_training = np.array(list(filter(is_positive_review, labeled_features_training)))
+negative_features_training = np.array(list(filter(is_negative_review, labeled_features_training)))
+positive_features_validation = np.array(list(filter(is_positive_review, labeled_features_validation)))
+negative_features_validation = np.array(list(filter(is_negative_review, labeled_features_validation)))
+
+# Cut off label column
+positive_features_training = positive_features_training[:,1:]
+negative_features_training = negative_features_training[:,1:]
+positive_features_validation = positive_features_validation[:,1:]
+negative_features_validation = negative_features_validation[:,1:]
+
+
 
 
 
