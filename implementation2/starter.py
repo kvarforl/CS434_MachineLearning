@@ -8,6 +8,7 @@ imdb_data = pd.read_csv('IMDB.csv', delimiter=',')
 # Importing the labels
 imdb_labels = pd.read_csv('IMDB_labels.csv', delimiter=',')
 
+# Split labels into testing and validation
 labelArray = imdb_labels.to_numpy()
 train_labels = labelArray[0:30000, :]
 validation_labels = labelArray[30000: , :]
@@ -46,13 +47,15 @@ vectorizer = CountVectorizer(
 )
 
 # fit the vectorizer on the text
-vectorizer.fit(imdb_data['review'])
+features = vectorizer.fit_transform(imdb_data['review'])
+
+# Split feature vectors into testing and validation
+train_features = labelArray[0:30000, :]
+validation_features = labelArray[30000:40000 , :]
 
 # get the vocabulary
 inv_vocab = {v: k for k, v in vectorizer.vocabulary_.items()}
 vocabulary = [inv_vocab[i] for i in range(len(inv_vocab))]
-print(len(inv_vocab))
-
 
 # Apply settings for part 1
 vectorizer.max_features = 2000
