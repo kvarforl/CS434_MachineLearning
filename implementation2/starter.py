@@ -37,9 +37,7 @@ def clean_text(text):
 #takes an alpha value for smoothing; defaults to 1
 # returns a row vector of probabilities for each word in the vocabulary [p(w0|y), p(w1|y), ... p(wd|y)]
 def p_wi_given_y(features, alpha=1):
-    numerator = np.sum(features, axis=0)#vector of word counts in features matrix + alpha
-    numerator[numerator==0] = 1 #batshit stupid workaround for lack of scalar addition to sparse matrices
-    numerator += alpha-1
+    numerator = np.sum(features, axis=0) +alpha#vector of word counts in features matrix + alpha
     denominator = np.sum(numerator)   #total number of words in class + |V|alpha 
     return (1/denominator) * numerator
 
@@ -60,7 +58,7 @@ vectorizer = CountVectorizer(
 
 # fit the vectorizer on the text
 features = vectorizer.fit_transform(imdb_data['review'])
-
+features = features.toarray()
 # Split feature vectors into testing and validation
 train_features = features[0:30000, :]
 validation_features = features[30000:40000 , :]
