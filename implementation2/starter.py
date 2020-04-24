@@ -73,9 +73,11 @@ train_labels = labelArray[0:30000, :]
 validation_labels = labelArray[30000: , :]
 
 p_positive_training = np.count_nonzero(train_labels == "positive") / len(train_labels)
-p_negative_training = np.count_nonzero(train_labels == "negative") / len(train_labels)
+p_negative_training = 1 - p_positive_training
+#p_negative_training = np.count_nonzero(train_labels == "negative") / len(train_labels)
 p_positive_validation = np.count_nonzero(validation_labels == "positive") / len(validation_labels)
-p_negative_validation = np.count_nonzero(validation_labels == "negative") / len(validation_labels)
+p_negative_validation = 1 - p_positive_validation
+#p_negative_validation = np.count_nonzero(validation_labels == "negative") / len(validation_labels)
 print("probablility of training positives: ", p_positive_training)
 print("probability of training negatives: ", p_negative_training)
 
