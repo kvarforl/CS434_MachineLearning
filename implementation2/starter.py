@@ -37,8 +37,10 @@ def clean_text(text):
 #takes an alpha value for smoothing; defaults to 1
 # returns a row vector of probabilities for each word in the vocabulary [p(w0|y), p(w1|y), ... p(wd|y)]
 def p_wi_given_y(features, alpha=1):
-    numerator = np.sum(features, axis=0) + alpha #vector of word counts in features matrix + alpha
-    denominator = np.sum(features) + (features.shape[1] * alpha)  #total number of words in class + |V|alpha
+    numerator = np.sum(features, axis=0)#vector of word counts in features matrix + alpha
+    numerator[numerator==0] = 1 #batshit stupid workaround for lack of scalar addition to sparse matrices
+    numerator += alpha-1
+    denominator = np.sum(numerator)   #total number of words in class + |V|alpha 
     return (1/denominator) * numerator
 
 #only focused on numerator for now
@@ -46,7 +48,7 @@ def p_wi_given_y(features, alpha=1):
 # w is the result of p_wi_givenY(positive_features) or p_wi_givenY(negative_features)
 # py is either p_positive or p_negative
 def calc_p_y_given_x(x, w, py):
-    numerator = np.prod(np.power(x, w))*py
+    numerator = np.prod(np.power(w, x))*py
 
 
 # this vectorizer will skip stop words
@@ -97,7 +99,7 @@ def is_negative_review(review):
 
 # Add label column for sorting
 #labeled_features_training = np.hstack((train_labels, train_features))
-labeled_features_all = imdb_labels.join(imdb_data).to_numpy()
+labeled_features_all = imdb_labels.join(pd.DataFrame(features)).to_numpy()
 labeled_features_training = labeled_features_all[0:30000, :]
 labeled_features_validation = labeled_features_all[30000: , :]
 
@@ -114,6 +116,11 @@ positive_features_validation = positive_features_validation[:,1:]
 negative_features_validation = negative_features_validation[:,1:]
 
 
+wpositive = p_wi_given_y(positive_features_training)
+wnegative = p_wi_given_y(negative_features_training)
 
-
+numerator = calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
+denominator = numerator + calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
+prob = numerator / denominator
+print(prob)
 
