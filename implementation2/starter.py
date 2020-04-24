@@ -10,14 +10,6 @@ imdb_data = pd.read_csv('IMDB.csv', delimiter=',')
 # Importing the labels
 imdb_labels = pd.read_csv('IMDB_labels.csv', delimiter=',')
 
-# Split labels into testing and validation
-labelArray = imdb_labels.to_numpy()
-train_labels = labelArray[0:30000, :]
-validation_labels = labelArray[30000: , :]
-#print(len(train_labels))
-#print(len(validation_labels))
-#print(validation_labels)
-
 def clean_text(text):
 
     # remove HTML tags
@@ -41,9 +33,9 @@ def clean_text(text):
 
     return text
 
-#takes a matrix of class y reviews, where each review is a row, and each column is a count of word occurances
+#takes a matrix of class y reviews, where each review is a row, and each column is a count of word occurances per review
 #takes an alpha value for smoothing; defaults to 1
-# returns a row vector of probabilities for each word in the vocabulary [each entry is p( wi | y)]
+# returns a row vector of probabilities for each word in the vocabulary [p(w0|y), p(w1|y), ... p(wd|y)]
 def p_wi_given_y(features, alpha=1):
     numerator = np.sum(features, axis=0) + alpha #vector of word counts in features matrix + alpha
     denominator = np.sum(features) + (features.shape[1] * alpha)  #total number of words in class + |V|alpha
@@ -88,8 +80,10 @@ def is_negative_review(review):
         return False
 
 # Add label column for sorting
-labeled_features_training = np.hstack((train_labels, train_features))
-labeled_features_validation = np.hstack((validation_labels, validation_features))
+#labeled_features_training = np.hstack((train_labels, train_features))
+labeled_features_all = imdb_labels.join(imdb_data).to_numpy()
+labeled_features_training = labeled_features_all[0:30000, :]
+labeled_features_validation = labeled_features_all[30000: , :]
 
 # Filter arrays to lists of positive and negative reviews
 positive_features_training = np.array(list(filter(is_positive_review, labeled_features_training)))
