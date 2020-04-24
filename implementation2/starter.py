@@ -41,6 +41,14 @@ def p_wi_given_y(features, alpha=1):
     denominator = np.sum(features) + (features.shape[1] * alpha)  #total number of words in class + |V|alpha
     return (1/denominator) * numerator
 
+#only focused on numerator for now
+# x is review to be classified.
+# w is the result of p_wi_givenY(positive_features) or p_wi_givenY(negative_features)
+# py is either p_positive or p_negative
+def calc_p_y_given_x(x, w, py):
+    numerator = np.prod(np.power(x, w))*py
+
+
 # this vectorizer will skip stop words
 vectorizer = CountVectorizer(
     stop_words="english",
