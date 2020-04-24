@@ -43,6 +43,7 @@ def clean_text(text):
 
 #takes a matrix of class y reviews, where each review is a row, and each column is a count of word occurances
 #takes an alpha value for smoothing; defaults to 1
+# returns a row vector of probabilities for each word in the vocabulary [each entry is p( wi | y)]
 def p_wi_given_y(features, alpha=1):
     numerator = np.sum(features, axis=0) + alpha #vector of word counts in features matrix + alpha
     denominator = np.sum(features) + (features.shape[1] * alpha)  #total number of words in class + |V|alpha
