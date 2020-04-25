@@ -46,14 +46,7 @@ def p_wi_given_y(features, alpha=1):
 # w is the result of p_wi_givenY(positive_features) or p_wi_givenY(negative_features)
 # py is either p_positive or p_negative
 def calc_p_y_given_x(x, w, py):
-    #no log
-    #numerator = np.prod(np.power(w, x))*py
-    #numerator = np.log(np.prod(np.power(w, x))) + np.log(py)
-
-    #with log
-    #numerator = np.sum(x*np.log(w.astype("float64"))) + py
     numerator = np.sum(x*np.log(w.astype("float64"))) + np.log(py)
-
     return numerator
 
 
@@ -70,6 +63,7 @@ features = features.toarray()
 # Split feature vectors into testing and validation
 train_features = features[0:30000, :]
 validation_features = features[30000:40000 , :]
+test_features = features[40000: , :]
 
 # get the vocabulary
 inv_vocab = {v: k for k, v in vectorizer.vocabulary_.items()}
@@ -82,12 +76,8 @@ validation_labels = labelArray[30000: , :]
 
 p_positive_training = np.count_nonzero(train_labels == "positive") / len(train_labels)
 p_negative_training = 1 - p_positive_training
-#p_negative_training = np.count_nonzero(train_labels == "negative") / len(train_labels)
 p_positive_validation = np.count_nonzero(validation_labels == "positive") / len(validation_labels)
 p_negative_validation = 1 - p_positive_validation
-#p_negative_validation = np.count_nonzero(validation_labels == "negative") / len(validation_labels)
-print("probablility of training positives: ", p_positive_training)
-print("probability of training negatives: ", p_negative_training)
 
 
 
@@ -104,7 +94,6 @@ def is_negative_review(review):
         return False
 
 # Add label column for sorting
-#labeled_features_training = np.hstack((train_labels, train_features))
 labeled_features_all = imdb_labels.join(pd.DataFrame(features)).to_numpy()
 labeled_features_training = labeled_features_all[0:30000, :]
 labeled_features_validation = labeled_features_all[30000: , :]
@@ -125,34 +114,8 @@ negative_features_validation = negative_features_validation[:,1:]
 wpositive = p_wi_given_y(positive_features_training)
 wnegative = p_wi_given_y(negative_features_training)
 
-#WITH NO LOG
-# numerator = calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
-# denominator = numerator + calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
-# probpostive = numerator / denominator
-# print(probpostive)
-
-# numerator = calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
-# denominator = numerator + calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
-# probnegative = numerator / denominator
-# print(probnegative)
-# print(probpostive + probnegative)
-
-#with log
-# p_positive_training = np.log(p_positive_training)
-# p_negative_training = np.log(p_negative_training)
 pos = calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
 neg = calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
-# denominator = numerator * calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
-# probpostive = numerator - denominator
-print(pos)
-print(neg)
-if(pos > neg):
-    print("YAY?? ")
-else:
-    print(":((")
-
-#print(np.log(0.5))
-
 
 def map_positive_prob(feature):
     return calc_p_y_given_x(feature, wpositive, p_positive_training)
@@ -189,7 +152,15 @@ n_accuracy = calc_accuracy(n_predictions, "negative") # Accuracy of predicting n
 
 overall_accuracy = ((p_accuracy * len(p_predictions)) + (n_accuracy * len(n_predictions))) / 10000
 
-print("Overall Accuracy: ", overall_accuracy)
+print("Validation Accuracy: ", overall_accuracy)
 
-
-# Get accuracy by comparing with validation data labels
+# Generate and output predictions from testing data
+positive_probs = list(map(map_positive_prob, test_features))
+negative_probs = list(map(map_negative_prob, test_features))
+test_predictions = get_predictions(positive_probs, negative_probs)
+with open("test-prediction1.csv", "w") as fp:
+    for c in test_predictions:
+        if(c == "positive"):
+            print("1", file=fp)
+        else:
+            print("0",file=fp)
