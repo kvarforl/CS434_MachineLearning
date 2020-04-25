@@ -46,7 +46,11 @@ def p_wi_given_y(features, alpha=1):
 # w is the result of p_wi_givenY(positive_features) or p_wi_givenY(negative_features)
 # py is either p_positive or p_negative
 def calc_p_y_given_x(x, w, py):
-    numerator = np.prod(np.power(w, x))*py
+    #no log
+    #numerator = np.prod(np.power(w, x))*py
+    numerator = np.log(np.prod(np.power(w, x))) + np.log(py)
+    #with log
+    #numerator = np.sum(x*np.log(w.astype("float64"))) + py
     return numerator
 
 
@@ -118,14 +122,31 @@ negative_features_validation = negative_features_validation[:,1:]
 wpositive = p_wi_given_y(positive_features_training)
 wnegative = p_wi_given_y(negative_features_training)
 
-numerator = calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
-denominator = numerator + calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
-probpostive = numerator / denominator
-print(probpostive)
+#WITH NO LOG
+# numerator = calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
+# denominator = numerator + calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
+# probpostive = numerator / denominator
+# print(probpostive)
 
-numerator = calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
-denominator = numerator + calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
-probnegative = numerator / denominator
-print(probnegative)
+# numerator = calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
+# denominator = numerator + calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
+# probnegative = numerator / denominator
+# print(probnegative)
+# print(probpostive + probnegative)
 
-print(probpostive + probnegative)
+#with log
+# p_positive_training = np.log(p_positive_training)
+# p_negative_training = np.log(p_negative_training)
+pos = calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
+neg = calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
+# denominator = numerator * calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
+# probpostive = numerator - denominator
+print(pos)
+print(neg)
+if(pos > neg):
+    print("YAY?? ")
+else:
+    print(":((")
+
+#print(np.log(0.5))
+
