@@ -47,6 +47,7 @@ def p_wi_given_y(features, alpha=1):
 # py is either p_positive or p_negative
 def calc_p_y_given_x(x, w, py):
     numerator = np.prod(np.power(w, x))*py
+    return numerator
 
 
 # this vectorizer will skip stop words
@@ -119,6 +120,12 @@ wnegative = p_wi_given_y(negative_features_training)
 
 numerator = calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
 denominator = numerator + calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
-prob = numerator / denominator
-print(prob)
+probpostive = numerator / denominator
+print(probpostive)
 
+numerator = calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
+denominator = numerator + calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
+probnegative = numerator / denominator
+print(probnegative)
+
+print(probpostive + probnegative)
