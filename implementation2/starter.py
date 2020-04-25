@@ -38,7 +38,7 @@ def clean_text(text):
 # returns a row vector of probabilities for each word in the vocabulary [p(w0|y), p(w1|y), ... p(wd|y)]
 def p_wi_given_y(features, alpha=1):
     numerator = np.sum(features, axis=0) +alpha#vector of word counts in features matrix + alpha
-    denominator = np.sum(numerator)   #total number of words in class + |V|alpha 
+    denominator = np.sum(numerator)   #total number of words in class + |V|alpha
     return (1/denominator) * numerator
 
 #only focused on numerator for now
@@ -48,9 +48,12 @@ def p_wi_given_y(features, alpha=1):
 def calc_p_y_given_x(x, w, py):
     #no log
     #numerator = np.prod(np.power(w, x))*py
-    numerator = np.log(np.prod(np.power(w, x))) + np.log(py)
+    #numerator = np.log(np.prod(np.power(w, x))) + np.log(py)
+
     #with log
     #numerator = np.sum(x*np.log(w.astype("float64"))) + py
+    numerator = np.sum(x*np.log(w.astype("float64"))) + np.log(py)
+
     return numerator
 
 
@@ -150,3 +153,43 @@ else:
 
 #print(np.log(0.5))
 
+
+def map_positive_prob(feature):
+    return calc_p_y_given_x(feature, wpositive, p_positive_training)
+
+def map_negative_prob(feature):
+    return calc_p_y_given_x(feature, wnegative, p_negative_training)
+
+def get_predictions(p_probs, n_probs):
+    predictions = []
+    for i in range(len(p_probs)):
+        if (p_probs[i] > n_probs[i]):
+            predictions.append("positive")
+        else:
+            predictions.append("negative")
+    return predictions
+
+def calc_accuracy(predictions, goal_class):
+    correct_estimations = 0
+    for i in range(len(predictions)):
+        if (predictions[i] == goal_class):
+            correct_estimations += 1
+    return correct_estimations / len(predictions)
+
+# Generate predictions from validation data
+p_positive_probs = list(map(map_positive_prob, positive_features_validation))
+p_negative_probs = list(map(map_negative_prob, positive_features_validation))
+p_predictions = get_predictions(p_positive_probs, p_negative_probs)
+p_accuracy = calc_accuracy(p_predictions, "positive") # Accuracy of predicting positive reviews
+
+n_positive_probs = list(map(map_positive_prob, negative_features_validation))
+n_negative_probs = list(map(map_negative_prob, negative_features_validation))
+n_predictions = get_predictions(n_positive_probs, n_negative_probs)
+n_accuracy = calc_accuracy(n_predictions, "negative") # Accuracy of predicting negative reviews
+
+overall_accuracy = ((p_accuracy * len(p_predictions)) + (n_accuracy * len(n_predictions))) / 10000
+
+print("Overall Accuracy: ", overall_accuracy)
+
+
+# Get accuracy by comparing with validation data labels
