@@ -12,7 +12,7 @@ def make_plot(x, y, title):
     ax.set(xlabel="Alpha (a)",
             ylabel = "Accuracy",
             title=title)
-    plt.xticks(np.arange(0, 2, 0.2));
+    plt.xticks(np.arange(0, 2.2, 0.2));
     fig.savefig(title.replace(" ", "_")+".png")
     plt.show()
 
@@ -91,8 +91,6 @@ p_negative_training = 1 - p_positive_training
 p_positive_validation = np.count_nonzero(validation_labels == "positive") / len(validation_labels)
 p_negative_validation = 1 - p_positive_validation
 
-
-
 def is_positive_review(review):
     if (review[0] == "positive"):
         return True
@@ -127,13 +125,14 @@ def train_vector(pos_features, neg_features, alpha):
     wnegative = p_wi_given_y(neg_features, alpha)
     return (wpositive, wnegative)
 
-
-    #wpositive = p_wi_given_y(positive_features_training)
-    #wnegative = p_wi_given_y(negative_features_training)
-
-
-    #pos = calc_p_y_given_x(positive_features_training[0], wpositive, p_positive_training)
-    #neg = calc_p_y_given_x(positive_features_training[0], wnegative, p_negative_training)
+def get_predictions(p_probs, n_probs):
+    predictions = []
+    for i in range(len(p_probs)):
+        if (p_probs[i] > n_probs[i]):
+            predictions.append("positive")
+        else:
+            predictions.append("negative")
+    return predictions
 
 def get_accuracy(wpositive, wnegative):
 
@@ -142,15 +141,6 @@ def get_accuracy(wpositive, wnegative):
 
     def map_negative_prob(feature):
         return calc_p_y_given_x(feature, wnegative, p_negative_training)
-
-    def get_predictions(p_probs, n_probs):
-        predictions = []
-        for i in range(len(p_probs)):
-            if (p_probs[i] > n_probs[i]):
-                predictions.append("positive")
-            else:
-                predictions.append("negative")
-        return predictions
 
     def calc_accuracy(predictions, goal_class):
         correct_estimations = 0
@@ -179,30 +169,28 @@ vector_accuracies = []
 alpha_values = []
 
 highest_accuracy = 0
-best_vector_index = 0
+best_vector= 0
 
 for i in range(0, 11):
     a = float(i) * 0.2
     alpha_values.append(a)
     trained_vectors.append(train_vector(positive_features_training, negative_features_training, a))
     vector_accuracies.append(get_accuracy(trained_vectors[-1][0], trained_vectors[-1][1]))
-    print(vector_accuracies[-1])
-    #if (highest_accuracy <= ve
+    #print(vector_accuracies[-1])
 
+    # keep track of best vector
+    if (highest_accuracy <= vector_accuracies[-1]):
+        highest_accuracy = vector_accuracies[-1]
+        best_vector = trained_vectors[-1]
+
+# Plot accuracy vs alpha values
 make_plot(alpha_values, vector_accuracies, "validation accuracy vs. alpha")
 
-
-# Generate and output predictions from testing data
-"""
-positive_probs = list(map(map_positive_prob, test_features))
-negative_probs = list(map(map_negative_prob, test_features))
-test_predictions = get_predictions(positive_probs, negative_probs)
-with open("test-prediction1.csv", "w") as fp:
+# Generate and output predictions using best vector on testing data
+test_predictions = get_predictions(best_vector[0], best_vector[1])
+with open("test-prediction2.csv", "w") as fp:
     for c in test_predictions:
         if(c == "positive"):
             print("1", file=fp)
         else:
             print("0",file=fp)
-
-
-"""
