@@ -12,7 +12,7 @@ def make_plot(x, y, title):
     ax.set(xlabel="Alpha (a)",
             ylabel = "Accuracy",
             title=title)
-    plt.xticks(np.arange(0, 2, 0.2));
+    #plt.xticks(np.arange(0, 2, 0.2));
     fig.savefig(title.replace(" ", "_")+".png")
     plt.show()
 
@@ -128,14 +128,14 @@ def get_accuracy(wpositive, wnegative):
 
 trained_vectors = []
 vector_accuracies = []
-min_df_values = range(1,10)
-for m in min_df_values:
+max_df_values = [0.95, 0.9, 0.85, 0.8, 0.75]
+for m in max_df_values:
     # this vectorizer will skip stop words
     vectorizer = CountVectorizer(
         stop_words="english",
         preprocessor=clean_text,
         max_features=2000,
-        min_df=m
+        max_df=m
     )
 
     # fit the vectorizer on the text
@@ -184,7 +184,7 @@ for m in min_df_values:
 
 
 
-make_plot(min_df_values, vector_accuracies, "validation accuracy vs max_ft")
+make_plot(max_df_values, vector_accuracies, "validation accuracy vs max_df")
 
 
 # Generate and output predictions from testing data
