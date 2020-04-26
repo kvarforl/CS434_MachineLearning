@@ -186,8 +186,20 @@ for i in range(0, 11):
 # Plot accuracy vs alpha values
 make_plot(alpha_values, vector_accuracies, "validation accuracy vs. alpha")
 
+def generate_test_predictions(positive_v, negative_v):
+    def map_positive_prob(feature):
+        return calc_p_y_given_x(feature, positive_v, p_positive_training)
+
+    def map_negative_prob(feature):
+        return calc_p_y_given_x(feature, negative_v, p_negative_training)
+
+    positive_probs = list(map(map_positive_prob, test_features))
+    negative_probs = list(map(map_negative_prob, test_features))
+    test_predictions = get_predictions(positive_probs, negative_probs)
+    return test_predictions
+
 # Generate and output predictions using best vector on testing data
-test_predictions = get_predictions(best_vector[0], best_vector[1])
+test_predictions = generate_test_predictions(best_vector[0], best_vector[1])
 with open("test-prediction2.csv", "w") as fp:
     for c in test_predictions:
         if(c == "positive"):
