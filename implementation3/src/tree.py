@@ -141,12 +141,25 @@ class DecisionTreeClassifier():
 			########################################
 			#       YOUR CODE GOES HERE            #
 			########################################
-
+			#assuming that every item in y is split into left or right (nothing remains uncategorized)
+			pL = len(left_y) / len(y)
+			pR = len(right_y) / len(y)
+			gain = self._uncertainty(y) - (pL* self._uncertainty(left_y)) - (pR*self._uncertainty(right_y))
 			return gain
 		# we hit leaf node
 		# don't have any gain, and don't want to divide by 0
 		else:
 			return 0
+	
+	#assuming C means count in assignment description
+	def _uncertainty(self, tlist):
+		#need to think harder about what the list actually is, but here is me assuming its a bunch of 1s and 0s 
+		cpositive = np.count_nonzero(tlist == 1)
+		cnegative = np.count_nonzero(tlist == 0)
+		total = len(tlist)
+		return 1 - ((cpositive/total)**2) - ((cnegative/total)**2) 
+
+
 
 class RandomForestClassifier():
 	"""
