@@ -39,6 +39,8 @@ def decision_tree_testing(x_train, y_train, x_test, y_test):
 	preds = clf.predict(x_test)
 	print('F1 Test {}'.format(f1(y_test, preds)))
 
+	print("Root -- Feature ", clf.root.feature, "\tSplit:", clf.root.split)
+
 def test_depth(x_train, y_train, x_test, y_test):
 	print("Decision Tree Depth Test")
 	depths = list(range(1, 26)) #1 through 25, inclusive
@@ -58,13 +60,13 @@ def test_depth(x_train, y_train, x_test, y_test):
 	fig, ax = plt.subplots()
 	ax.plot(depths, test_accuracies)
 	ax.plot(depths, train_accuracies)
-	ax.set(xlabel="depth of decision tree", ylabel="accuracy")
+	ax.set(xlabel="depth of decision tree", ylabel="accuracy", title="Accuracy vs Depth")
 	fig.legend(["Testing", "Train"])
 	fig.savefig("accuracies_v_tree_depth.png")	
 
 	fig, ax = plt.subplots()
 	ax.plot(depths, f1_scores)
-	ax.set(xlabel="depth of decision tree", ylabel="f1 score")
+	ax.set(xlabel="depth of decision tree", ylabel="f1 score", title="F1 Score vs Depth")
 	fig.savefig("f1scores_v_tree_depth.png")	
 
 
@@ -77,7 +79,7 @@ def random_forest_testing(x_train, y_train, x_test, y_test):
 	train_accuracy = accuracy_score(preds_train, y_train)
 	test_accuracy = accuracy_score(preds_test, y_test)
 	print('Train {}'.format(train_accuracy))
-	print('Test {}'.format(test_accuracy))
+	print('Test {}'.format(test_accuracy))			
 	preds = rclf.predict(x_test)
 	print('F1 Test {}'.format(f1(y_test, preds)))
 
@@ -94,7 +96,7 @@ if __name__ == '__main__':
 		county_info(args)
 	if args.decision_tree == 1:
 		decision_tree_testing(x_train, y_train, x_test, y_test)
-		test_depth(x_train, y_train, x_test, y_test)
+		#test_depth(x_train, y_train, x_test, y_test)
 	if args.random_forest == 1:
 		random_forest_testing(x_train, y_train, x_test, y_test)
 
