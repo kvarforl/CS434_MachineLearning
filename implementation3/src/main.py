@@ -95,8 +95,9 @@ if __name__ == '__main__':
 	if args.county_dict == 1:
 		county_info(args)
 	if args.decision_tree == 1:
-		decision_tree_testing(x_train, y_train, x_test, y_test)
+		#decision_tree_testing(x_train, y_train, x_test, y_test)
 		#test_depth(x_train, y_train, x_test, y_test)
+		pass
 	if args.random_forest == 1:
 		random_forest_testing(x_train, y_train, x_test, y_test)
 

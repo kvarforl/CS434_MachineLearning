@@ -182,9 +182,13 @@ class RandomForestClassifier():
 		self.max_features = max_features
 		self.max_depth = max_depth
 
+		self.trees = []
+		for _ in self.n_trees:
+			self.trees.append(DecisionTreeClassifier(self.max_depth))
 		##################
 		# YOUR CODE HERE #
 		##################
+
 
 	# fit all trees
 	def fit(self, X, y):
@@ -192,6 +196,7 @@ class RandomForestClassifier():
 		print('Fitting Random Forest...\n')
 		for i in range(self.n_trees):
 			print(i+1, end='\t\r')
+
 			##################
 			# YOUR CODE HERE #
 			##################
@@ -201,11 +206,14 @@ class RandomForestClassifier():
 		bagged_X = []
 		bagged_y = []
 		for i in range(self.n_trees):
-			continue
-			##################
-			# YOUR CODE HERE #
-			##################
-
+			#generate random sample
+			num_samples, num_features = X.shape
+			indices = np.random.choice(num_samples, num_samples, replace=True)
+			samplesX = np.take(X,indices,axis=0)
+			samplesY = np.take(y, indices, axis=0)
+			bagged_X.append(samplesX)
+			bagged_y.append(samplesY)
+			#print("Shapes: X-", samplesX.shape, "Y-",samplesY.shape
 		# ensure data is still numpy arrays
 		return np.array(bagged_X), np.array(bagged_y)
 
