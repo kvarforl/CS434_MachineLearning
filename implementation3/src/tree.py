@@ -35,8 +35,10 @@ class DecisionTreeClassifier():
 		The maximum depth to build the tree. Root is at depth 0, a single split makes depth 1 (decision stump)
 	"""
 
-	def __init__(self, max_depth=None):
+	def __init__(self, max_depth=None, forest=False, max_features=0):
 		self.max_depth = max_depth
+		self.forest = forest
+		self.max_features = max_features
 
 	# take in features X and labels y
 	# build a tree
@@ -68,10 +70,15 @@ class DecisionTreeClassifier():
 		return accuracy
 
 	# function to build a decision tree
-	def build_tree(self, X, y, depth):
+	def build_tree(self, X, y, depth, ft_set="uninitialized"):
 		num_samples, num_features = X.shape
+		if(str(ft_set) == "uninitialized" and self.forest == True ):
+			ft_set = np.arange(num_features)
 		# which features we are considering for splitting on
-		self.features_idx = np.arange(0, X.shape[1])
+		if(self.forest):
+			self.features_idx = np.random.choice(ft_set, self.max_features, replace=False)
+		else:
+			self.features_idx = np.arange(0, X.shape[1])
 
 		# store data and information about best split
 		# used when building subtrees recursively
@@ -91,6 +98,7 @@ class DecisionTreeClassifier():
 		# if we haven't hit the maximum depth, keep building
 		if depth <= self.max_depth:
 			# consider each feature
+
 			for feature in self.features_idx:
 				# consider the set of all values for that feature to split on
 				possible_splits = np.unique(X[:, feature])
@@ -107,12 +115,12 @@ class DecisionTreeClassifier():
 						best_right_X = right_X
 						best_left_y = left_y
 						best_right_y = right_y
-		
+			ft_set = ft_set[ft_set != best_feature]
 		# if we haven't hit a leaf node
 		# add subtrees recursively
 		if best_gain > 0.0:
-			left_tree = self.build_tree(best_left_X, best_left_y, depth=depth+1)
-			right_tree = self.build_tree(best_right_X, best_right_y, depth=depth+1)
+			left_tree = self.build_tree(best_left_X, best_left_y, depth=depth+1, ft_set=ft_set)
+			right_tree = self.build_tree(best_right_X, best_right_y, depth=depth+1, ft_set=ft_set)
 			return Node(prediction=prediction, feature=best_feature, split=best_split, left_tree=left_tree, right_tree=right_tree)
 
 		# if we did hit a leaf node
@@ -183,11 +191,8 @@ class RandomForestClassifier():
 		self.max_depth = max_depth
 
 		self.trees = []
-		for _ in self.n_trees:
-			self.trees.append(DecisionTreeClassifier(self.max_depth))
-		##################
-		# YOUR CODE HERE #
-		##################
+		for _ in range(self.n_trees):
+			self.trees.append(DecisionTreeClassifier(self.max_depth, forest=True, max_features=max_features))
 
 
 	# fit all trees
@@ -195,8 +200,8 @@ class RandomForestClassifier():
 		bagged_X, bagged_y = self.bag_data(X, y)
 		print('Fitting Random Forest...\n')
 		for i in range(self.n_trees):
-			print(i+1, end='\t\r')
-
+			#print(i+1, end='\t\r')
+			self.trees[i].fit(bagged_X[i], bagged_y[i])
 			##################
 			# YOUR CODE HERE #
 			##################
