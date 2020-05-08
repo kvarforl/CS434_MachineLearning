@@ -7,7 +7,7 @@ sns.set()
 import argparse
 
 from utils import load_data, f1, accuracy_score, load_dictionary, dictionary_info
-from tree import DecisionTreeClassifier, RandomForestClassifier
+from tree import DecisionTreeClassifier, RandomForestClassifier, AdaBoostClassifier
 
 def load_args():
 
@@ -62,12 +62,12 @@ def test_depth(x_train, y_train, x_test, y_test):
 	ax.plot(depths, train_accuracies)
 	ax.set(xlabel="depth of decision tree", ylabel="accuracy", title="Accuracy vs Depth")
 	fig.legend(["Testing", "Train"])
-	fig.savefig("accuracies_v_tree_depth.png")	
+	fig.savefig("accuracies_v_tree_depth.png")
 
 	fig, ax = plt.subplots()
 	ax.plot(depths, f1_scores)
 	ax.set(xlabel="depth of decision tree", ylabel="f1 score", title="F1 Score vs Depth")
-	fig.savefig("f1scores_v_tree_depth.png")	
+	fig.savefig("f1scores_v_tree_depth.png")
 
 
 def random_forest_testing(x_train, y_train, x_test, y_test):
@@ -79,9 +79,28 @@ def random_forest_testing(x_train, y_train, x_test, y_test):
 	train_accuracy = accuracy_score(preds_train, y_train)
 	test_accuracy = accuracy_score(preds_test, y_test)
 	print('Train {}'.format(train_accuracy))
-	print('Test {}'.format(test_accuracy))			
+	print('Test {}'.format(test_accuracy))
 	preds = rclf.predict(x_test)
 	print('F1 Test {}'.format(f1(y_test, preds)))
+
+def ada_boost_testing(x_train, y_train, x_test, y_test):
+	print('AdaBoost\n\n')
+	abclf = AdaBoostClassifier(L=50)
+	"""
+	rclf.fit(x_train, y_train)
+	preds_train = rclf.predict(x_train)
+	preds_test = rclf.predict(x_test)
+	train_accuracy = accuracy_score(preds_train, y_train)
+	test_accuracy = accuracy_score(preds_test, y_test)
+	print('Train {}'.format(train_accuracy))
+	print('Test {}'.format(test_accuracy))
+	preds = rclf.predict(x_test)
+	print('F1 Test {}'.format(f1(y_test, preds)))
+
+	"""
+
+	print("Initialized booster")
+
 
 
 
@@ -100,10 +119,13 @@ if __name__ == '__main__':
 		pass
 	if args.random_forest == 1:
 		random_forest_testing(x_train, y_train, x_test, y_test)
+	if args.ada_boost == 1:
+		ada_boost_testing(x_train, y_train, x_test, y_test)
+
 
 	print('Done')
-	
-	
+
+
 
 
 

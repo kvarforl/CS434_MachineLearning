@@ -35,10 +35,12 @@ class DecisionTreeClassifier():
 		The maximum depth to build the tree. Root is at depth 0, a single split makes depth 1 (decision stump)
 	"""
 
-	def __init__(self, max_depth=None, forest=False, max_features=0):
+	def __init__(self, max_depth=None, forest=False, max_features=0, adaBoost=False, D=0):
 		self.max_depth = max_depth
 		self.forest = forest
 		self.max_features = max_features
+		self.adaBoost = adaBoost
+		self.D = D
 
 	# take in features X and labels y
 	# build a tree
@@ -158,14 +160,14 @@ class DecisionTreeClassifier():
 		# don't have any gain, and don't want to divide by 0
 		else:
 			return 0
-	
+
 	#assuming C means count in assignment description
 	def _uncertainty(self, tlist):
-		#need to think harder about what the list actually is, but here is me assuming its a bunch of 1s and 0s 
+		#need to think harder about what the list actually is, but here is me assuming its a bunch of 1s and 0s
 		cpositive = np.count_nonzero(tlist == 1)
 		cnegative = np.count_nonzero(tlist == 0)
 		total = len(tlist)
-		return 1 - ((cpositive/total)**2) - ((cnegative/total)**2) 
+		return 1 - ((cpositive/total)**2) - ((cnegative/total)**2)
 
 
 
@@ -241,15 +243,25 @@ class RandomForestClassifier():
 # MUST MODIFY THIS EXISTING DECISION TREE CODE #
 ################################################
 class AdaBoostClassifier():
-	def __init__(self):
-		pass
+	"""
+	AdaBoost Classifier. Build series of decision trees that will be iteritively based off the last one generated.
 
+	Parameters:
+	-----------
+	n_trees: int
+		Number of trees in forest/ensemble
+	max_features: int
+		Maximum number of features to consider for a split when feature bagging
+	max_depth: int
+		Maximum depth of any decision tree in forest/ensemble
+	"""
+	def __init__(self, L):
+		self.n_trees = L
+		self.max_depth = 1
+		D = np.empty(2098)
+		D.fill(1/2098)
 
-
-
-
-
-
-
-
+		self.trees = []
+		#for _ in range(self.n_trees):
+			#self.trees.append(DecisionTreeClassifier(self.max_depth, adaBoost=True, D=max_features))
 
