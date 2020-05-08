@@ -163,6 +163,26 @@ def test_max_features(x_train, y_train, x_test, y_test):
 	plt.show()
 	fig.savefig("f1scores_v_maxfeatures.png")	
 
+def run_trials(x_train, y_train, x_test, y_test):
+	test_accuracies = []
+	train_accuracies = []
+	f1_scores = []
+	for _ in range(10):
+		rclf = RandomForestClassifier(max_depth=7, max_features=25, n_trees=130)
+		rclf.fit(x_train, y_train)
+		preds_train = rclf.predict(x_train)
+		preds_test = rclf.predict(x_test)
+		train_accuracies.append(accuracy_score(preds_train, y_train))
+		test_accuracies.append(accuracy_score(preds_test, y_test))
+		preds = rclf.predict(x_test)
+		f1_scores.append(f1(y_test, preds))
+
+	print("Test Accuracies", "Train Accuracies", "F1 Scores", sep="\t")
+	for i in range(10):	
+		print(test_accuracies[i], train_accuracies[i],f1_scores[i], sep="\t")
+	print()
+
+	print(np.mean(test_accuracies), np.mean(train_accuracies), np.mean(f1_scores), sep="\t")	
 
 ###################################################
 # Modify for running your experiments accordingly #
@@ -181,6 +201,7 @@ if __name__ == '__main__':
 		#run tests and generate graphs
 		#test_num_trees(x_train, y_train, x_test, y_test) 
 		#test_max_features(x_train, y_train, x_test, y_test)
+		#run_trials(x_train, y_train, x_test, y_test)
 	if args.ada_boost == 1:
 		ada_boost_testing(x_train, y_train, x_test, y_test)
 
