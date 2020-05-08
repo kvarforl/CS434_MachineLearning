@@ -138,7 +138,7 @@ def test_max_features(x_train, y_train, x_test, y_test):
 	max_features = [1,2,5,8,10,20,25,35,50]
 	test_accuracies = []
 	train_accuracies = []
-	f1_scores = []	test_max_features(x_train, y_train, x_test, y_test)
+	f1_scores = []
 	for m in max_features:
 		rclf = RandomForestClassifier(max_depth=7, max_features=m, n_trees=50)
 		rclf.fit(x_train, y_train)
@@ -178,9 +178,9 @@ if __name__ == '__main__':
 		pass
 	if args.random_forest == 1:
 		random_forest_testing(x_train, y_train, x_test, y_test)
-		#random_forest_testing(x_train, y_train, x_test, y_test)
-		#test_num_trees(x_train, y_train, x_test, y_test)
-		test_max_features(x_train, y_train, x_test, y_test)
+		#run tests and generate graphs
+		#test_num_trees(x_train, y_train, x_test, y_test) 
+		#test_max_features(x_train, y_train, x_test, y_test)
 	if args.ada_boost == 1:
 		ada_boost_testing(x_train, y_train, x_test, y_test)
 

@@ -78,7 +78,7 @@ class DecisionTreeClassifier():
 			ft_set = np.arange(num_features)
 		# which features we are considering for splitting on
 		if(self.forest):
-			self.features_idx = np.random.choice(ft_set, self.max_features, replace=False)
+			self.features_idx = np.random.choice(ft_set, self.max_features, replace=True)
 		else:
 			self.features_idx = np.arange(0, X.shape[1])
 
