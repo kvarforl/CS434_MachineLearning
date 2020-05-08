@@ -78,7 +78,7 @@ class DecisionTreeClassifier():
 			ft_set = np.arange(num_features)
 		# which features we are considering for splitting on
 		if(self.forest):
-			self.features_idx = np.random.choice(ft_set, self.max_features, replace=True)
+			self.features_idx = np.random.choice(ft_set, self.max_features, replace=False)
 		else:
 			self.features_idx = np.arange(0, X.shape[1])
 
@@ -117,7 +117,7 @@ class DecisionTreeClassifier():
 						best_right_X = right_X
 						best_left_y = left_y
 						best_right_y = right_y
-			ft_set = ft_set[ft_set != best_feature]
+			#ft_set = ft_set[ft_set != best_feature]
 		# if we haven't hit a leaf node
 		# add subtrees recursively
 		if best_gain > 0.0:
