@@ -103,6 +103,65 @@ def ada_boost_testing(x_train, y_train, x_test, y_test):
 
 
 
+def test_num_trees(x_train, y_train, x_test, y_test):
+	print("Decision Tree Depth Test")
+	n_trees = list(range(10, 210,10)) #[10,20,...200]
+	test_accuracies = []
+	train_accuracies = []
+	f1_scores = []
+	for t in n_trees:
+		rclf = RandomForestClassifier(max_depth=7, max_features=11, n_trees=t)
+		rclf.fit(x_train, y_train)
+		preds_train = rclf.predict(x_train)
+		preds_test = rclf.predict(x_test)
+		train_accuracies.append(accuracy_score(preds_train, y_train))
+		test_accuracies.append(accuracy_score(preds_test, y_test))
+		preds = rclf.predict(x_test)
+		f1_scores.append(f1(y_test, preds))
+	print("done computing")
+	fig, ax = plt.subplots()
+	ax.plot(n_trees, test_accuracies)
+	ax.plot(n_trees, train_accuracies)
+	ax.set(xlabel="number of trees in forest", ylabel="accuracy", title="Accuracy vs NumTrees")
+	fig.legend(["Testing", "Train"])
+	plt.show()
+	fig.savefig("accuracies_v_num_trees.png")	
+
+	fig, ax = plt.subplots()
+	ax.plot(n_trees, f1_scores)
+	ax.set(xlabel="number of trees in forest", ylabel="f1 score", title="F1 Score vs NumTrees")
+	plt.show()
+	fig.savefig("f1scores_v_num_trees.png")	
+
+def test_max_features(x_train, y_train, x_test, y_test):
+	print("Decision Tree Depth Test")
+	max_features = [1,2,5,8,10,20,25,35,50]
+	test_accuracies = []
+	train_accuracies = []
+	f1_scores = []	test_max_features(x_train, y_train, x_test, y_test)
+	for m in max_features:
+		rclf = RandomForestClassifier(max_depth=7, max_features=m, n_trees=50)
+		rclf.fit(x_train, y_train)
+		preds_train = rclf.predict(x_train)
+		preds_test = rclf.predict(x_test)
+		train_accuracies.append(accuracy_score(preds_train, y_train))
+		test_accuracies.append(accuracy_score(preds_test, y_test))
+		preds = rclf.predict(x_test)
+		f1_scores.append(f1(y_test, preds))
+	print("done computing")
+	fig, ax = plt.subplots()
+	ax.plot(max_features, test_accuracies)
+	ax.plot(max_features, train_accuracies)
+	ax.set(xlabel="max number of features", ylabel="accuracy", title="Accuracy vs MaxFeatures")
+	fig.legend(["Testing", "Train"])
+	plt.show()
+	fig.savefig("accuracies_v_maxfeatures.png")	
+
+	fig, ax = plt.subplots()
+	ax.plot(max_features, f1_scores)
+	ax.set(xlabel="max number of features", ylabel="f1 score", title="F1 Score vs MaxFeatures")
+	plt.show()
+	fig.savefig("f1scores_v_maxfeatures.png")	
 
 
 ###################################################
@@ -119,10 +178,14 @@ if __name__ == '__main__':
 		pass
 	if args.random_forest == 1:
 		random_forest_testing(x_train, y_train, x_test, y_test)
+		#random_forest_testing(x_train, y_train, x_test, y_test)
+		#test_num_trees(x_train, y_train, x_test, y_test)
+		test_max_features(x_train, y_train, x_test, y_test)
 	if args.ada_boost == 1:
 		ada_boost_testing(x_train, y_train, x_test, y_test)
 
 
+		
 	print('Done')
 
 
