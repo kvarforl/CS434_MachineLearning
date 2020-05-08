@@ -228,13 +228,15 @@ class RandomForestClassifier():
 	def predict(self, X):
 		preds = []
 
-		# remove this one \/
-		preds = np.ones(len(X)).astype(int)
-		# ^that line is only here so the code runs
+		for i in range(self.n_trees):
+			preds.append(np.array(self.trees[i].predict(X)))
+		preds = np.array(preds)
 
-		##################
-		# YOUR CODE HERE #
-		##################
+		majority = np.count_nonzero(preds, axis=0).reshape(1, -1) #condense to 1d array of the number of 1s in each column
+		majority[majority >= (0.5*self.n_trees)] = 1 #if the number of 1's is more than half, set to 1
+		majority[majority != 1] = 0 #if it didn't get set to one in previous line, set to 0
+
+		preds = majority.flatten()
 		return preds
 
 
