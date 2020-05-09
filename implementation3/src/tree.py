@@ -101,7 +101,9 @@ class DecisionTreeClassifier():
 
 		if (self.adaBoost):
 			D_total_negative = self.get_D_sum(D, y, -1)
+			#print("Total negative d: ", D_total_negative)
 			D_total_positive = self.get_D_sum(D, y, 1)
+			#print("Total positive d: ", D_total_positive)
 
 		# what we would predict at this node if we had to
 		# majority class
@@ -120,7 +122,9 @@ class DecisionTreeClassifier():
 					# >= split goes on right, < goes on left
 					gain, left_X, right_X, left_y, right_y = self.check_split(X, y, feature, split, D, D_total_negative, D_total_positive)
 					# if we have a better gain, use this split and keep track of data
+					print("gain: ", gain)
 					if gain > best_gain:
+						print("new best gain: ", gain)
 						best_gain = gain
 						best_feature = feature
 						best_split = split
@@ -150,6 +154,7 @@ class DecisionTreeClassifier():
 		right_X = X[right_idx]
 		left_y = y[left_idx]
 		right_y = y[right_idx]
+
 		left_d = D[left_idx]
 		right_d = D[right_idx]
 		
@@ -174,17 +179,29 @@ class DecisionTreeClassifier():
 		# calculate benefit
 		benefit = 0
 
-		# U(A) = 1 - (D total for No)^2 - (D total for Yes)^2 
-		ua = 1 - pow(D_total_n, 2) - pow(D_total_p, 2)
+		if len(left_y) > 0 and len(right_y) > 0:
+			# U(A) = 1 - (D total for No)^2 - (D total for Yes)^2 
+			ua = 1 - pow(D_total_n, 2) - pow(D_total_p, 2)
 
-		# U(AL) = 1 - (Left branch D total for No)^2 - (Left branch D total for Yes)^2
-		ual = 1 - pow(self.get_D_sum(left_d, left_y, -1), 2) - pow(self.get_D_sum(left_d, left_y, 1), 2)
+			# U(AL) = 1 - ((Left branch D total for No)/(Left branch D total))^2 - ((Left branch D total for Yes)/(Left branch D total))^2
+			ual = 1 - pow(self.get_D_sum(left_d, left_y, -1) / left_d.sum(), 2) - pow(self.get_D_sum(left_d, left_y, 1) / left_d.sum(), 2)
 
-		# U(AR) = 1 - (Right branch D total for No)^2 - (Right branch D total for Yes)^2
-		uar = 1 - pow(self.get_D_sum(right_d, right_y, -1), 2) - pow(self.get_D_sum(right_d, right_y, 1), 2)
+			# U(AR) = 1 - (Right branch D total for No)^2 - (Right branch D total for Yes)^2
+			uar = 1 - pow(self.get_D_sum(right_d, right_y, -1) / right_d.sum(), 2) - pow(self.get_D_sum(right_d, right_y, 1) / right_d.sum(), 2)
 
-		# Benefit = U(A) - (D total left) * U(AL) - (D total right) * U(AR)
-		benefit = ua - (left_d.sum() * ual) - (left_d.sum() * uar)
+			"""
+			print("left_d_sum: ", left_d.sum())
+			print("right_d_sum: ", right_d.sum())
+			print("ua: ", ua)
+			print("ual: ", ual)
+			print("uar: ", uar)
+			"""
+
+			# Benefit = U(A) - (D total left) * U(AL) - (D total right) * U(AR)
+			benefit = ua - (left_d.sum() * ual) - (left_d.sum() * uar)
+		else:
+			benefit = 0
+
 		return benefit
 
 	def calculate_gini_gain(self, y, left_y, right_y):
