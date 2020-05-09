@@ -86,8 +86,10 @@ def random_forest_testing(x_train, y_train, x_test, y_test):
 def ada_boost_testing(x_train, y_train, x_test, y_test):
 	print('AdaBoost\n\n')
 	abclf = AdaBoostClassifier(L=50)
+	y_train[y_train==0] = -1
+	y_test[y_test==0] = -1
+	abclf.fit(x_train, y_train)
 	"""
-	rclf.fit(x_train, y_train)
 	preds_train = rclf.predict(x_train)
 	preds_test = rclf.predict(x_test)
 	train_accuracy = accuracy_score(preds_train, y_train)
@@ -125,13 +127,13 @@ def test_num_trees(x_train, y_train, x_test, y_test):
 	ax.set(xlabel="number of trees in forest", ylabel="accuracy", title="Accuracy vs NumTrees")
 	fig.legend(["Testing", "Train"])
 	plt.show()
-	fig.savefig("accuracies_v_num_trees.png")	
+	fig.savefig("accuracies_v_num_trees.png")
 
 	fig, ax = plt.subplots()
 	ax.plot(n_trees, f1_scores)
 	ax.set(xlabel="number of trees in forest", ylabel="f1 score", title="F1 Score vs NumTrees")
 	plt.show()
-	fig.savefig("f1scores_v_num_trees.png")	
+	fig.savefig("f1scores_v_num_trees.png")
 
 def test_max_features(x_train, y_train, x_test, y_test):
 	print("Decision Tree Depth Test")
@@ -155,13 +157,13 @@ def test_max_features(x_train, y_train, x_test, y_test):
 	ax.set(xlabel="max number of features", ylabel="accuracy", title="Accuracy vs MaxFeatures")
 	fig.legend(["Testing", "Train"])
 	plt.show()
-	fig.savefig("accuracies_v_maxfeatures.png")	
+	fig.savefig("accuracies_v_maxfeatures.png")
 
 	fig, ax = plt.subplots()
 	ax.plot(max_features, f1_scores)
 	ax.set(xlabel="max number of features", ylabel="f1 score", title="F1 Score vs MaxFeatures")
 	plt.show()
-	fig.savefig("f1scores_v_maxfeatures.png")	
+	fig.savefig("f1scores_v_maxfeatures.png")
 
 def run_trials(x_train, y_train, x_test, y_test):
 	test_accuracies = []
@@ -178,11 +180,11 @@ def run_trials(x_train, y_train, x_test, y_test):
 		f1_scores.append(f1(y_test, preds))
 
 	print("Test Accuracies", "Train Accuracies", "F1 Scores", sep="\t")
-	for i in range(10):	
+	for i in range(10):
 		print(test_accuracies[i], train_accuracies[i],f1_scores[i], sep="\t")
 	print()
 
-	print(np.mean(test_accuracies), np.mean(train_accuracies), np.mean(f1_scores), sep="\t")	
+	print(np.mean(test_accuracies), np.mean(train_accuracies), np.mean(f1_scores), sep="\t")
 
 ###################################################
 # Modify for running your experiments accordingly #
@@ -199,14 +201,14 @@ if __name__ == '__main__':
 	if args.random_forest == 1:
 		random_forest_testing(x_train, y_train, x_test, y_test)
 		#run tests and generate graphs
-		#test_num_trees(x_train, y_train, x_test, y_test) 
+		#test_num_trees(x_train, y_train, x_test, y_test)
 		#test_max_features(x_train, y_train, x_test, y_test)
 		#run_trials(x_train, y_train, x_test, y_test)
 	if args.ada_boost == 1:
 		ada_boost_testing(x_train, y_train, x_test, y_test)
 
 
-		
+
 	print('Done')
 
 

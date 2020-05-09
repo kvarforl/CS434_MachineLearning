@@ -35,16 +35,15 @@ class DecisionTreeClassifier():
 		The maximum depth to build the tree. Root is at depth 0, a single split makes depth 1 (decision stump)
 	"""
 
-	def __init__(self, max_depth=None, forest=False, max_features=0, adaBoost=False, D=0):
+	def __init__(self, max_depth=None, forest=False, max_features=0, adaBoost=False):
 		self.max_depth = max_depth
 		self.forest = forest
 		self.max_features = max_features
 		self.adaBoost = adaBoost
-		self.D = D
 
 	# take in features X and labels y
 	# build a tree
-	def fit(self, X, y):
+	def fit(self, X, y, D=0):
 		self.num_classes = len(set(y))
 		self.root = self.build_tree(X, y, depth=1)
 
@@ -260,10 +259,47 @@ class AdaBoostClassifier():
 	def __init__(self, L):
 		self.n_trees = L
 		self.max_depth = 1
-		D = np.empty(2098)
-		D.fill(1/2098)
 
 		self.trees = []
-		#for _ in range(self.n_trees):
-			#self.trees.append(DecisionTreeClassifier(self.max_depth, adaBoost=True, D=max_features))
+		self.dVectors = []
+		self.alphaVector = []
+		for _ in range(self.n_trees):
+			self.trees.append(DecisionTreeClassifier(self.max_depth, adaBoost=True))
+			self.alphaVector.append(1)
+			self.dVectors.append(np.empty(2098))
 
+	def fit(self, X, y):
+		"""
+		dWeights = np.empty(2098)
+		self.dVectors
+		dWeights.fill(1/2098)
+
+		"""
+
+		#bagged_X, bagged_y = self.bag_data(X, y)
+		print('Fitting AdaBoost Descision Stumps...\n')
+
+		# Initialize weights of first tree to uniform distribution
+		self.dVectors[0].fill(1/2098)
+
+		for i in range(self.n_trees):
+			# Learn decision stump classifier with weight input
+			#self.trees[i].fit(X[i], y[i], self.dVectors[i])
+
+			# Calculate error of trained classifier
+			#error = 1 - self.trees[i].accuracy_score(X, y)
+
+			# Calculate alpha value
+			#alphaVector[i] = log((1-error)/error)/2
+
+			if (i < self.n_trees - 1): # The last stump won't calculate a new weight vector
+				# Generate next weight vector
+				# ...
+
+				# Normalize weight vector
+				#self.dVectors[i + 1] = self.dVectors[i + 1] / self.dVectors[i + 1].sum()
+
+		print()
+
+
+193
