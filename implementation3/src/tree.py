@@ -45,7 +45,10 @@ class DecisionTreeClassifier():
 	# build a tree
 	def fit(self, X, y, D="uninitialized"):
 		self.classes = list(set(y))
-		self.root = self.build_tree(X, y, depth=1, D)
+		if (AdaBoostClassifier):
+			self.root = self.build_tree(X, y, depth=1, D=D)
+		else:
+			self.root = self.build_tree(X, y, depth=1)
 
 	# make prediction for each example of features X
 	def predict(self, X):
@@ -96,10 +99,9 @@ class DecisionTreeClassifier():
 		D_total_negative = None
 		D_total_positive = None
 
-		if (self.adaBoost) {
+		if (self.adaBoost):
 			D_total_negative = self.get_D_sum(D, y, -1)
 			D_total_positive = self.get_D_sum(D, y, 1)
-		}
 
 		# what we would predict at this node if we had to
 		# majority class
@@ -129,10 +131,12 @@ class DecisionTreeClassifier():
 			#ft_set = ft_set[ft_set != best_feature]
 		# if we haven't hit a leaf node
 		# add subtrees recursively
-		if best_gain > 0.0:
-			left_tree = self.build_tree(best_left_X, best_left_y, depth=depth+1, ft_set=ft_set)
-			right_tree = self.build_tree(best_right_X, best_right_y, depth=depth+1, ft_set=ft_set)
-			return Node(prediction=prediction, feature=best_feature, split=best_split, left_tree=left_tree, right_tree=right_tree)
+		if (not(self.adaBoost)):
+			if best_gain > 0.0:
+				left_tree = self.build_tree(best_left_X, best_left_y, depth=depth+1, ft_set=ft_set)
+				right_tree = self.build_tree(best_right_X, best_right_y, depth=depth+1, ft_set=ft_set)
+				return Node(prediction=prediction, feature=best_feature, split=best_split, left_tree=left_tree, right_tree=right_tree)
+
 
 		# if we did hit a leaf node
 		return Node(prediction=prediction, feature=best_feature, split=best_split, left_tree=None, right_tree=None)
@@ -160,12 +164,12 @@ class DecisionTreeClassifier():
 		
 		return gain, left_X, right_X, left_y, right_y
 
-	def get_D_sum(D, y, pred=1):
+	def get_D_sum(self, D, y, pred=1):
 		d_idx = np.where(y == pred)
 		d_pred = D[d_idx]
-		return D_pred.sum()
+		return d_pred.sum()
 
-	def calculate_adaboost_benefit(self, y, left_y, right_y, left_d, right_d, D, D_total_n, D_total_p):
+	def calculate_adaboost_benefit(self, y, left_y, right_y, left_d, right_d, D_total_n, D_total_p):
 		# not a leaf node
 		# calculate benefit
 		benefit = 0
@@ -174,14 +178,13 @@ class DecisionTreeClassifier():
 		ua = 1 - pow(D_total_n, 2) - pow(D_total_p, 2)
 
 		# U(AL) = 1 - (Left branch D total for No)^2 - (Left branch D total for Yes)^2
-		ual = 1 - self.get_D_sum(left_d, left_y, -1) - self.get_D_sum(left_d, left_y, 1)
+		ual = 1 - pow(self.get_D_sum(left_d, left_y, -1), 2) - pow(self.get_D_sum(left_d, left_y, 1), 2)
 
 		# U(AR) = 1 - (Right branch D total for No)^2 - (Right branch D total for Yes)^2
-		uar = 1 - self.get_D_sum(right_d, right_y, -1) - self.get_D_sum(right_d, right_y, 1)
+		uar = 1 - pow(self.get_D_sum(right_d, right_y, -1), 2) - pow(self.get_D_sum(right_d, right_y, 1), 2)
 
 		# Benefit = U(A) - (D total left) * U(AL) - (D total right) * U(AR)
 		benefit = ua - (left_d.sum() * ual) - (left_d.sum() * uar)
-
 		return benefit
 
 	def calculate_gini_gain(self, y, left_y, right_y):
@@ -328,6 +331,7 @@ class AdaBoostClassifier():
 		for i in range(self.n_trees):
 			# Learn decision stump classifier with weight input
 			self.trees[i].fit(X, y, self.dVectors[i])
+
 			# Calculate error of trained classifier
 			error = 1 - self.trees[i].accuracy_score(X, y)
 			print("Error: ", error)
@@ -338,13 +342,13 @@ class AdaBoostClassifier():
 
 			if (i < self.n_trees - 1): # The last stump won't calculate a new weight vector
 				# Generate next weight vector
-				# ...
 				m_factor = np.array(self.trees[i].predict(X))
 				correct = np.exp(self.alphaVector[i])
 				incorrect = np.exp(-1*self.alphaVector[i])
 				m_factor[m_factor == y] = correct 
 				m_factor[m_factor != correct] = incorrect
 				self.dVectors[i+1] = np.multiply(self.dVectors[i], m_factor)
+
 				# Normalize weight vector
 				self.dVectors[i + 1] = self.dVectors[i + 1] / self.dVectors[i + 1].sum()
 				print()

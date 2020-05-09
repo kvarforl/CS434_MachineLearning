@@ -85,7 +85,7 @@ def random_forest_testing(x_train, y_train, x_test, y_test):
 
 def ada_boost_testing(x_train, y_train, x_test, y_test):
 	print('AdaBoost\n\n')
-	abclf = AdaBoostClassifier(L=50)
+	abclf = AdaBoostClassifier(L=3)
 	y_train[y_train==0] = -1
 	y_test[y_test==0] = -1
 	abclf.fit(x_train, y_train)
