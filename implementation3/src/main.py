@@ -168,7 +168,7 @@ def run_trials(x_train, y_train, x_test, y_test):
 	train_accuracies = []
 	f1_scores = []
 	for _ in range(10):
-		rclf = RandomForestClassifier(max_depth=7, max_features=25, n_trees=130)
+		rclf = RandomForestClassifier(max_depth=7, max_features=5, n_trees=40)
 		rclf.fit(x_train, y_train)
 		preds_train = rclf.predict(x_train)
 		preds_test = rclf.predict(x_test)
@@ -201,7 +201,7 @@ if __name__ == '__main__':
 		#run tests and generate graphs
 		#test_num_trees(x_train, y_train, x_test, y_test) 
 		#test_max_features(x_train, y_train, x_test, y_test)
-		#run_trials(x_train, y_train, x_test, y_test)
+		run_trials(x_train, y_train, x_test, y_test)
 	if args.ada_boost == 1:
 		ada_boost_testing(x_train, y_train, x_test, y_test)
 

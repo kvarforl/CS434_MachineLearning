@@ -10,3 +10,7 @@ q2* files in this directory demonstrate a **logistic regression classifier with 
 ### [implementation2/](https://github.com/kvarforl/CS434_MachineLearning/tree/master/implementation2)
 
 The project in this directory classifies movie reviews as positive or negative using the bag of words representation and a **Multinomial Naive Bayes** classifier with **Laplace Smoothing**. The project explores the impact of parameters such as alpha (q4), count vecotrizer parameters (q5), and the use of a validation set in addition to the testing and training sets.
+
+### [implementation3/](https://github.com/kvarforl/CS434_MachineLearning/tree/master/implementation3)
+
+This directory contains project code for a decision tree ensemble to predict election results from US county statistics. It contains code that generates a basic **Decision Tree Classifier**, in addition to a **Random Forest** generator, and an implementation **AdaBoost**. 
