@@ -43,9 +43,9 @@ class DecisionTreeClassifier():
 
 	# take in features X and labels y
 	# build a tree
-	def fit(self, X, y, D=0):
+	def fit(self, X, y, D="uninitialized"):
 		self.num_classes = len(set(y))
-		self.root = self.build_tree(X, y, depth=1)
+		self.root = self.build_tree(X, y, depth=1, D)
 
 	# make prediction for each example of features X
 	def predict(self, X):
@@ -71,7 +71,7 @@ class DecisionTreeClassifier():
 		return accuracy
 
 	# function to build a decision tree
-	def build_tree(self, X, y, depth, ft_set="uninitialized"):
+	def build_tree(self, X, y, depth, ft_set="uninitialized", D="uninitialized"):
 		num_samples, num_features = X.shape
 		if(str(ft_set) == "uninitialized" and self.forest == True ):
 			ft_set = np.arange(num_features)
@@ -106,7 +106,7 @@ class DecisionTreeClassifier():
 				for split in possible_splits:
 					# get the gain and the data on each side of the split
 					# >= split goes on right, < goes on left
-					gain, left_X, right_X, left_y, right_y = self.check_split(X, y, feature, split)
+					gain, left_X, right_X, left_y, right_y = self.check_split(X, y, feature, split, D)
 					# if we have a better gain, use this split and keep track of data
 					if gain > best_gain:
 						best_gain = gain
@@ -129,17 +129,50 @@ class DecisionTreeClassifier():
 
 
 	# gets data corresponding to a split by using numpy indexing
-	def check_split(self, X, y, feature, split):
+	def check_split(self, X, y, feature, split, D="uninitialized"):
 		left_idx = np.where(X[:, feature] < split)
 		right_idx = np.where(X[:, feature] >= split)
 		left_X = X[left_idx]
 		right_X = X[right_idx]
 		left_y = y[left_idx]
 		right_y = y[right_idx]
+		left_d = D[left_idx]
+		right_d = D[right_idx]
+		
 
-		# calculate gini impurity and gain for y, left_y, right_y
-		gain = self.calculate_gini_gain(y, left_y, right_y)
+		if (D == "uninitialized"):
+			# calculate gini impurity and gain for y, left_y, right_y
+			gain = self.calculate_gini_gain(y, left_y, right_y)
+		else:
+			# calculate benefit of split ()
+			gain = self.calculate_adaboost_benefit(y, left_y, right_y, left_d, right_d)
+		
 		return gain, left_X, right_X, left_y, right_y
+
+	def calculate_adaboost_benefit(self, y, left_y, right_y):
+		# not a leaf node
+		# calculate benefit
+		benefit = 0
+
+		DNo = 
+
+		# U(A) = 1 - (D total for No)^2 - (D total for Yes)^2 
+
+		# U(AL) = 1 - (Left branch D total for No)^2 - (Left branch D total for Yes)^2
+		# U(AL) = 1 - (Right branch D total for No)^2 - (Right branch D total for Yes)^2
+
+		# Benefit = U(A) - (D total left) * U(AL) - (D total right) * U(AR)
+
+		if len(left_y) > 0 and len(right_y) > 0:
+			#assuming that every item in y is split into left or right (nothing remains uncategorized)
+			pL = len(left_y) / len(y)
+			pR = len(right_y) / len(y)
+			benefit = self._uncertainty(y) - (pL* self._uncertainty(left_y)) - (pR*self._uncertainty(right_y))
+			return benefit
+		# we hit leaf node
+		# don't have any benefit, and don't want to divide by 0
+		else:
+			return 0
 
 	def calculate_gini_gain(self, y, left_y, right_y):
 		# not a leaf node
