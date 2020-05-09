@@ -44,7 +44,7 @@ class DecisionTreeClassifier():
 	# take in features X and labels y
 	# build a tree
 	def fit(self, X, y, D="uninitialized"):
-		self.num_classes = len(set(y))
+		self.classes = list(set(y))
 		self.root = self.build_tree(X, y, depth=1, D)
 
 	# make prediction for each example of features X
@@ -62,6 +62,8 @@ class DecisionTreeClassifier():
 				node = node.left_tree
 			else:
 				node = node.right_tree
+		if(self.adaBoost and node.prediction == 0):
+			return -1
 		return node.prediction
 
 	# accuracy
@@ -93,7 +95,7 @@ class DecisionTreeClassifier():
 
 		# what we would predict at this node if we had to
 		# majority class
-		num_samples_per_class = [np.sum(y == i) for i in range(self.num_classes)]
+		num_samples_per_class = [np.sum(y == i) for i in self.classes]
 		prediction = np.argmax(num_samples_per_class)
 
 		# if we haven't hit the maximum depth, keep building
@@ -318,7 +320,6 @@ class AdaBoostClassifier():
 		for i in range(self.n_trees):
 			# Learn decision stump classifier with weight input
 			self.trees[i].fit(X, y, self.dVectors[i])
-
 			# Calculate error of trained classifier
 			error = 1 - self.trees[i].accuracy_score(X, y)
 			print("Error: ", error)
@@ -330,9 +331,14 @@ class AdaBoostClassifier():
 			if (i < self.n_trees - 1): # The last stump won't calculate a new weight vector
 				# Generate next weight vector
 				# ...
-
+				m_factor = np.array(self.trees[i].predict(X))
+				correct = np.exp(self.alphaVector[i])
+				incorrect = np.exp(-1*self.alphaVector[i])
+				m_factor[m_factor == y] = correct 
+				m_factor[m_factor != correct] = incorrect
+				self.dVectors[i+1] = np.multiply(self.dVectors[i], m_factor)
 				# Normalize weight vector
-				#self.dVectors[i + 1] = self.dVectors[i + 1] / self.dVectors[i + 1].sum()
+				self.dVectors[i + 1] = self.dVectors[i + 1] / self.dVectors[i + 1].sum()
 				print()
 
 		print()
