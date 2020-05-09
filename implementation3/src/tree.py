@@ -93,6 +93,14 @@ class DecisionTreeClassifier():
 		best_right_X = None
 		best_right_y = None
 
+		D_total_negative = None
+		D_total_positive = None
+
+		if (self.adaBoost) {
+			D_total_negative = self.get_D_sum(D, y, -1)
+			D_total_positive = self.get_D_sum(D, y, 1)
+		}
+
 		# what we would predict at this node if we had to
 		# majority class
 		num_samples_per_class = [np.sum(y == i) for i in self.classes]
@@ -108,7 +116,7 @@ class DecisionTreeClassifier():
 				for split in possible_splits:
 					# get the gain and the data on each side of the split
 					# >= split goes on right, < goes on left
-					gain, left_X, right_X, left_y, right_y = self.check_split(X, y, feature, split, D)
+					gain, left_X, right_X, left_y, right_y = self.check_split(X, y, feature, split, D, D_total_negative, D_total_positive)
 					# if we have a better gain, use this split and keep track of data
 					if gain > best_gain:
 						best_gain = gain
@@ -131,7 +139,7 @@ class DecisionTreeClassifier():
 
 
 	# gets data corresponding to a split by using numpy indexing
-	def check_split(self, X, y, feature, split, D="uninitialized"):
+	def check_split(self, X, y, feature, split, D="uninitialized", D_tot_n="uninitialized", D_tot_p="uninitialized"):
 		left_idx = np.where(X[:, feature] < split)
 		right_idx = np.where(X[:, feature] >= split)
 		left_X = X[left_idx]
@@ -142,39 +150,39 @@ class DecisionTreeClassifier():
 		right_d = D[right_idx]
 		
 
-		if (D == "uninitialized"):
+		if (self.adaBoost):
+			# calculate benefit of split ()
+			gain = self.calculate_adaboost_benefit(y, left_y, right_y, left_d, right_d, D_tot_n, D_tot_p)
+		else:
 			# calculate gini impurity and gain for y, left_y, right_y
 			gain = self.calculate_gini_gain(y, left_y, right_y)
-		else:
-			# calculate benefit of split ()
-			gain = self.calculate_adaboost_benefit(y, left_y, right_y, left_d, right_d)
+			
 		
 		return gain, left_X, right_X, left_y, right_y
 
-	def calculate_adaboost_benefit(self, y, left_y, right_y):
+	def get_D_sum(D, y, pred=1):
+		d_idx = np.where(y == pred)
+		d_pred = D[d_idx]
+		return D_pred.sum()
+
+	def calculate_adaboost_benefit(self, y, left_y, right_y, left_d, right_d, D, D_total_n, D_total_p):
 		# not a leaf node
 		# calculate benefit
 		benefit = 0
 
-		DNo = 
-
 		# U(A) = 1 - (D total for No)^2 - (D total for Yes)^2 
+		ua = 1 - pow(D_total_n, 2) - pow(D_total_p, 2)
 
 		# U(AL) = 1 - (Left branch D total for No)^2 - (Left branch D total for Yes)^2
-		# U(AL) = 1 - (Right branch D total for No)^2 - (Right branch D total for Yes)^2
+		ual = 1 - self.get_D_sum(left_d, left_y, -1) - self.get_D_sum(left_d, left_y, 1)
+
+		# U(AR) = 1 - (Right branch D total for No)^2 - (Right branch D total for Yes)^2
+		uar = 1 - self.get_D_sum(right_d, right_y, -1) - self.get_D_sum(right_d, right_y, 1)
 
 		# Benefit = U(A) - (D total left) * U(AL) - (D total right) * U(AR)
+		benefit = ua - (left_d.sum() * ual) - (left_d.sum() * uar)
 
-		if len(left_y) > 0 and len(right_y) > 0:
-			#assuming that every item in y is split into left or right (nothing remains uncategorized)
-			pL = len(left_y) / len(y)
-			pR = len(right_y) / len(y)
-			benefit = self._uncertainty(y) - (pL* self._uncertainty(left_y)) - (pR*self._uncertainty(right_y))
-			return benefit
-		# we hit leaf node
-		# don't have any benefit, and don't want to divide by 0
-		else:
-			return 0
+		return benefit
 
 	def calculate_gini_gain(self, y, left_y, right_y):
 		# not a leaf node
