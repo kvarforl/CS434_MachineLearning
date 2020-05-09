@@ -284,13 +284,15 @@ class AdaBoostClassifier():
 
 		for i in range(self.n_trees):
 			# Learn decision stump classifier with weight input
-			#self.trees[i].fit(X[i], y[i], self.dVectors[i])
+			self.trees[i].fit(X, y, self.dVectors[i])
 
 			# Calculate error of trained classifier
-			#error = 1 - self.trees[i].accuracy_score(X, y)
+			error = 1 - self.trees[i].accuracy_score(X, y)
+			print("Error: ", error)
 
 			# Calculate alpha value
-			#alphaVector[i] = log((1-error)/error)/2
+			self.alphaVector[i] = np.log((1-error)/error)/2
+			print("Alpha: ", self.alphaVector[i])
 
 			if (i < self.n_trees - 1): # The last stump won't calculate a new weight vector
 				# Generate next weight vector
@@ -298,6 +300,7 @@ class AdaBoostClassifier():
 
 				# Normalize weight vector
 				#self.dVectors[i + 1] = self.dVectors[i + 1] / self.dVectors[i + 1].sum()
+				print()
 
 		print()
 
