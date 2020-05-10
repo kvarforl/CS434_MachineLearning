@@ -327,11 +327,13 @@ class AdaBoostClassifier():
 
 			if (i < self.n_trees - 1): # The last stump won't calculate a new weight vector
 				# Generate next weight vector
-				m_factor = np.array(self.trees[i].predict(X))
+				m_factor = np.array(self.trees[i].predict(X)).astype("float64")
+				#m_factor is all -1
 				correct = np.exp(self.alphaVector[i])
 				incorrect = np.exp(-1*self.alphaVector[i])
 				m_factor[m_factor == y] = correct 
 				m_factor[m_factor != correct] = incorrect
+				
 				self.dVectors[i+1] = np.multiply(self.dVectors[i], m_factor)
 
 				# Normalize weight vector
