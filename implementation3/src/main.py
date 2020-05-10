@@ -89,8 +89,14 @@ def ada_boost_testing(x_train, y_train, x_test, y_test):
 	y_train[y_train==0] = -1
 	y_test[y_test==0] = -1
 	abclf.fit(x_train, y_train)
-	pred_train = abclf.predict(x_train)
-	print(pred_train)
+	preds_train = abclf.predict(x_train)
+	preds_test = abclf.predict(x_test)
+	train_accuracy = accuracy_score(preds_train, y_train)
+	test_accuracy = accuracy_score(preds_test, y_test)
+	print('Train {}'.format(train_accuracy))
+	print('Test {}'.format(test_accuracy))
+	preds = abclf.predict(x_test)
+	print('F1 Test {}'.format(f1(y_test, preds)))
 	"""
 	preds_train = rclf.predict(x_train)
 	preds_test = rclf.predict(x_test)
@@ -105,6 +111,41 @@ def ada_boost_testing(x_train, y_train, x_test, y_test):
 
 	print("Initialized booster")
 
+def test_L(x_train, y_train, x_test, y_test):
+	print("Ada Boost L Test")
+	Ls = list(range(10, 210,10)) #[10,20,...200]
+	test_accuracies = []
+	train_accuracies = []
+	f1_scores_test = []
+	f1_scores_train = []
+	for l in Ls:
+		abclf = AdaBoostClassifier(L=l)
+		y_train[y_train==0] = -1
+		y_test[y_test==0] = -1
+		abclf.fit(x_train, y_train)
+		preds_train = abclf.predict(x_train)
+		preds_test = abclf.predict(x_test)
+		train_accuracies.append(accuracy_score(preds_train, y_train))
+		test_accuracies.append(accuracy_score(preds_test, y_test))
+		preds = abclf.predict(x_test)
+		f1_scores_test.append(f1(y_test, preds))
+		f1_scores_train.append(f1(y_train, preds_train))
+	print("done computing")
+	fig, ax = plt.subplots()
+	ax.plot(Ls, test_accuracies)
+	ax.plot(Ls, train_accuracies)
+	ax.set(xlabel="L", ylabel="accuracy", title="Accuracy vs L")
+	fig.legend(["Testing", "Train"])
+	plt.show()
+	fig.savefig("accuracies_v_L.png")
+
+	fig, ax = plt.subplots()
+	ax.plot(Ls, f1_scores_test)
+	ax.plot(Ls, f1_scores_train)
+	ax.set(xlabel="L", ylabel="f1 score", title="F1 Score vs L")
+	fig.legend(["Testing", "Train"])
+	plt.show()
+	fig.savefig("f1scores_v_L.png")
 
 
 def test_num_trees(x_train, y_train, x_test, y_test):
@@ -209,6 +250,7 @@ if __name__ == '__main__':
 		print()
 	if args.ada_boost == 1:
 		ada_boost_testing(x_train, y_train, x_test, y_test)
+		test_L(x_train, y_train, x_test, y_test)
 		print()
 
 

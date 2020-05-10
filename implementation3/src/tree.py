@@ -60,11 +60,17 @@ class DecisionTreeClassifier():
 	# traverse tree by following splits at nodes
 	def _predict(self, example):
 		node = self.root
-		while node.left_tree:
+		if(self.adaBoost):
 			if example[node.feature] < node.split:
-				node = node.left_tree
+				return -1
 			else:
-				node = node.right_tree
+				return 1
+		else:
+			while node.left_tree:
+				if example[node.feature] < node.split:
+					node = node.left_tree
+				else:
+					node = node.right_tree
 		if(self.adaBoost and node.prediction == 0):
 			return -1
 		return node.prediction
@@ -101,12 +107,12 @@ class DecisionTreeClassifier():
 		num_samples_per_class = [np.sum(y == i) for i in self.classes]
 		prediction = np.argmax(num_samples_per_class)
 
-		if(self.adaBoost):
-			sample_weights = [np.sum(D[y==i]) for i in self.classes]
-			print("predicts index of larger sample weight")
-			print("sample_weights:", sample_weights)
-			prediction = np.argmax(sample_weights)
-			print("prediction", prediction)
+		# if(self.adaBoost):
+		# 	sample_weights = [np.sum(D[y==i]) for i in self.classes]
+		# 	print("predicts index of larger sample weight")
+		# 	print("sample_weights:", sample_weights)
+		# 	prediction = np.argmax(sample_weights)
+		# 	print("prediction", prediction)
 
 		# if we haven't hit the maximum depth, keep building
 		if depth <= self.max_depth:
@@ -332,11 +338,11 @@ class AdaBoostClassifier():
 			#error = 1 - self.trees[i].accuracy_score(X, y)
 			print("Error: ", error)
 
-			if(error == 1.0):
-				print("yikes. error is 100%. stopping.")
-				break
-			# Calculate alpha value
-			self.alphaVector[i] = np.log((1-error)/error)/2
+			if(error == 0.0):
+				self.alphaVector[i] = 500.0
+			else:	
+				# Calculate alpha value
+				self.alphaVector[i] = np.log((1-error)/error)/2
 			print("Alpha: ", self.alphaVector[i])
 
 			if (i < self.n_trees - 1): # The last stump won't calculate a new weight vector
@@ -362,6 +368,5 @@ class AdaBoostClassifier():
 		for i in range(self.n_trees):
 			preds = np.array(self.trees[i].predict(X)).astype("float64").copy() #a prediction vector
 			preds = preds * self.alphaVector[i]
-			print(i)
 			sum_vector = sum_vector + preds#accumulate
 		return np.sign(sum_vector) #return signs of pred vector
