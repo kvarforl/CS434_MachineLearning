@@ -238,15 +238,15 @@ if __name__ == '__main__':
 	if args.county_dict == 1:
 		county_info(args)
 	if args.decision_tree == 1:
-		#decision_tree_testing(x_train, y_train, x_test, y_test)
-		#test_depth(x_train, y_train, x_test, y_test)
+		decision_tree_testing(x_train, y_train, x_test, y_test)
+		test_depth(x_train, y_train, x_test, y_test)
 		print()
 	if args.random_forest == 1:
-		#random_forest_testing(x_train, y_train, x_test, y_test)
+		random_forest_testing(x_train, y_train, x_test, y_test)
 		#run tests and generate graphs
-		#test_num_trees(x_train, y_train, x_test, y_test)
-		#test_max_features(x_train, y_train, x_test, y_test)
-		#run_trials(x_train, y_train, x_test, y_test)
+		test_num_trees(x_train, y_train, x_test, y_test)
+		test_max_features(x_train, y_train, x_test, y_test)
+		run_trials(x_train, y_train, x_test, y_test)
 		print()
 	if args.ada_boost == 1:
 		ada_boost_testing(x_train, y_train, x_test, y_test)
