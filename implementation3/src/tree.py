@@ -45,7 +45,7 @@ class DecisionTreeClassifier():
 	# build a tree
 	def fit(self, X, y, D="uninitialized"):
 		self.classes = list(set(y))
-		if (AdaBoostClassifier):
+		if (self.adaBoost):
 			self.root = self.build_tree(X, y, depth=1, D=D)
 		else:
 			self.root = self.build_tree(X, y, depth=1)
@@ -96,15 +96,6 @@ class DecisionTreeClassifier():
 		best_right_X = None
 		best_right_y = None
 
-		D_total_negative = None
-		D_total_positive = None
-
-		if (self.adaBoost):
-			D_total_negative = self.get_D_sum(D, y, -1)
-			#print("Total negative d: ", D_total_negative)
-			D_total_positive = self.get_D_sum(D, y, 1)
-			#print("Total positive d: ", D_total_positive)
-
 		# what we would predict at this node if we had to
 		# majority class
 		num_samples_per_class = [np.sum(y == i) for i in self.classes]
@@ -120,9 +111,10 @@ class DecisionTreeClassifier():
 				for split in possible_splits:
 					# get the gain and the data on each side of the split
 					# >= split goes on right, < goes on left
-					gain, left_X, right_X, left_y, right_y = self.check_split(X, y, feature, split, D, D_total_negative, D_total_positive)
+					gain, left_X, right_X, left_y, right_y = self.check_split(X, y, feature, split, D)
+					
 					# if we have a better gain, use this split and keep track of data
-					print("gain: ", gain)
+					# print("gain: ", gain)
 					if gain > best_gain:
 						print("new best gain: ", gain)
 						best_gain = gain
@@ -132,7 +124,6 @@ class DecisionTreeClassifier():
 						best_right_X = right_X
 						best_left_y = left_y
 						best_right_y = right_y
-			#ft_set = ft_set[ft_set != best_feature]
 		# if we haven't hit a leaf node
 		# add subtrees recursively
 		if (not(self.adaBoost)):
@@ -147,7 +138,7 @@ class DecisionTreeClassifier():
 
 
 	# gets data corresponding to a split by using numpy indexing
-	def check_split(self, X, y, feature, split, D="uninitialized", D_tot_n="uninitialized", D_tot_p="uninitialized"):
+	def check_split(self, X, y, feature, split, D="uninitialized"):
 		left_idx = np.where(X[:, feature] < split)
 		right_idx = np.where(X[:, feature] >= split)
 		left_X = X[left_idx]
@@ -158,10 +149,9 @@ class DecisionTreeClassifier():
 		left_d = D[left_idx]
 		right_d = D[right_idx]
 		
-
 		if (self.adaBoost):
 			# calculate benefit of split ()
-			gain = self.calculate_adaboost_benefit(y, left_y, right_y, left_d, right_d, D_tot_n, D_tot_p)
+			gain = self.calculate_weighted_gain(y, left_y, right_y, left_d, right_d, D)
 		else:
 			# calculate gini impurity and gain for y, left_y, right_y
 			gain = self.calculate_gini_gain(y, left_y, right_y)
@@ -169,50 +159,11 @@ class DecisionTreeClassifier():
 		
 		return gain, left_X, right_X, left_y, right_y
 
-	def get_D_sum(self, D, y, pred=1):
-		d_idx = np.where(y == pred)
-		d_pred = D[d_idx]
-		return d_pred.sum()
-
-	def calculate_adaboost_benefit(self, y, left_y, right_y, left_d, right_d, D_total_n, D_total_p):
-		# not a leaf node
-		# calculate benefit
-		benefit = 0
-
-		if len(left_y) > 0 and len(right_y) > 0:
-			# U(A) = 1 - (D total for No)^2 - (D total for Yes)^2 
-			ua = 1 - pow(D_total_n, 2) - pow(D_total_p, 2)
-
-			# U(AL) = 1 - ((Left branch D total for No)/(Left branch D total))^2 - ((Left branch D total for Yes)/(Left branch D total))^2
-			ual = 1 - pow(self.get_D_sum(left_d, left_y, -1) / left_d.sum(), 2) - pow(self.get_D_sum(left_d, left_y, 1) / left_d.sum(), 2)
-
-			# U(AR) = 1 - (Right branch D total for No)^2 - (Right branch D total for Yes)^2
-			uar = 1 - pow(self.get_D_sum(right_d, right_y, -1) / right_d.sum(), 2) - pow(self.get_D_sum(right_d, right_y, 1) / right_d.sum(), 2)
-
-			"""
-			print("left_d_sum: ", left_d.sum())
-			print("right_d_sum: ", right_d.sum())
-			print("ua: ", ua)
-			print("ual: ", ual)
-			print("uar: ", uar)
-			"""
-
-			# Benefit = U(A) - (D total left) * U(AL) - (D total right) * U(AR)
-			benefit = ua - (left_d.sum() * ual) - (left_d.sum() * uar)
-		else:
-			benefit = 0
-
-		return benefit
-
 	def calculate_gini_gain(self, y, left_y, right_y):
 		# not a leaf node
 		# calculate gini impurity and gain
 		gain = 0
 		if len(left_y) > 0 and len(right_y) > 0:
-
-			########################################
-			#       YOUR CODE GOES HERE            #
-			########################################
 			#assuming that every item in y is split into left or right (nothing remains uncategorized)
 			pL = len(left_y) / len(y)
 			pR = len(right_y) / len(y)
@@ -222,6 +173,27 @@ class DecisionTreeClassifier():
 		# don't have any gain, and don't want to divide by 0
 		else:
 			return 0
+
+	def calculate_weighted_gain(self, y, left_y, right_y, left_d, right_d, d):
+		# not a leaf node
+		gain = 0
+		if len(left_y) > 0 and len(right_y) > 0:
+			#assuming that every item in y is split into left or right (nothing remains uncategorized)
+			pL = np.sum(left_d) / np.sum(d)
+			pR = np.sum(right_d) / np.sum(d)
+			gain = self._weighted_uncertainty(y, d) - (pL* self._weighted_uncertainty(left_y,left_d)) - (pR*self._weighted_uncertainty(right_y, right_d))
+			return gain
+		# we hit leaf node
+		# don't have any gain, and don't want to divide by 0
+		else:
+			return 0
+
+	def _weighted_uncertainty(self, tlist, dlist):
+		cpositive = np.sum(dlist[tlist == 1])#sum the weights at indices where t == 1
+		cnegative = np.sum(dlist[tlist == 0])
+		total = np.sum(dlist)
+		return 1 - ((cpositive/total)**2) - ((cnegative/total)**2)
+
 
 	#assuming C means count in assignment description
 	def _uncertainty(self, tlist):
@@ -264,11 +236,7 @@ class RandomForestClassifier():
 		bagged_X, bagged_y = self.bag_data(X, y)
 		print('Fitting Random Forest...\n')
 		for i in range(self.n_trees):
-			#print(i+1, end='\t\r')
 			self.trees[i].fit(bagged_X[i], bagged_y[i])
-			##################
-			# YOUR CODE HERE #
-			##################
 		print()
 
 	def bag_data(self, X, y, proportion=1.0):
@@ -339,7 +307,6 @@ class AdaBoostClassifier():
 
 		"""
 
-		#bagged_X, bagged_y = self.bag_data(X, y)
 		print('Fitting AdaBoost Descision Stumps...\n')
 
 		# Initialize weights of first tree to uniform distribution
@@ -347,6 +314,7 @@ class AdaBoostClassifier():
 
 		for i in range(self.n_trees):
 			# Learn decision stump classifier with weight input
+			print("dvect at ",i,":", self.dVectors[i])
 			self.trees[i].fit(X, y, self.dVectors[i])
 
 			# Calculate error of trained classifier
