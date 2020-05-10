@@ -161,11 +161,10 @@ class DecisionTreeClassifier():
 		left_y = y[left_idx]
 		right_y = y[right_idx]
 
-		left_d = D[left_idx]
-		right_d = D[right_idx]
-		
 		if (self.adaBoost):
 			# calculate benefit of split ()
+			left_d = D[left_idx]
+			right_d = D[right_idx]
 			gain = self.calculate_weighted_gain(y, left_y, right_y, left_d, right_d, D)
 		else:
 			# calculate gini impurity and gain for y, left_y, right_y
