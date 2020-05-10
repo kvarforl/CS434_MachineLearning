@@ -101,6 +101,12 @@ class DecisionTreeClassifier():
 		num_samples_per_class = [np.sum(y == i) for i in self.classes]
 		prediction = np.argmax(num_samples_per_class)
 
+		if(self.adaBoost):
+			sample_weights = [np.sum(D[y==i]) for i in self.classes]
+			print("predicts index of larger sample weight")
+			print("sample_weights:", sample_weights)
+			prediction = np.argmax(sample_weights)
+
 		# if we haven't hit the maximum depth, keep building
 		if depth <= self.max_depth:
 			# consider each feature
@@ -116,7 +122,7 @@ class DecisionTreeClassifier():
 					# if we have a better gain, use this split and keep track of data
 					# print("gain: ", gain)
 					if gain > best_gain:
-						print("new best gain: ", gain)
+						#print("new best gain: ", gain)
 						best_gain = gain
 						best_feature = feature
 						best_split = split
@@ -124,6 +130,8 @@ class DecisionTreeClassifier():
 						best_right_X = right_X
 						best_left_y = left_y
 						best_right_y = right_y
+
+		#need to predict based on best gain; use weights at D[best_feature] ?? yikes
 		# if we haven't hit a leaf node
 		# add subtrees recursively
 		if (not(self.adaBoost)):
@@ -314,7 +322,6 @@ class AdaBoostClassifier():
 
 		for i in range(self.n_trees):
 			# Learn decision stump classifier with weight input
-			print("dvect at ",i,":", self.dVectors[i])
 			self.trees[i].fit(X, y, self.dVectors[i])
 
 			# Calculate error of trained classifier
