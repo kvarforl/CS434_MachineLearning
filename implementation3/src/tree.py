@@ -308,8 +308,8 @@ class AdaBoostClassifier():
 			self.alphaVector.append(1)
 			self.dVectors.append(np.empty(2098))
 
-	def fit(self, X, y):	if(error == 1.0):
-				print("yikes. error is 100%. stopping.")
+	def fit(self, X, y):	
+			
 		"""
 		dWeights = np.empty(2098)
 		self.dVectors
