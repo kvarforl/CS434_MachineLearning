@@ -106,6 +106,7 @@ class DecisionTreeClassifier():
 			print("predicts index of larger sample weight")
 			print("sample_weights:", sample_weights)
 			prediction = np.argmax(sample_weights)
+			print("prediction", prediction)
 
 		# if we haven't hit the maximum depth, keep building
 		if depth <= self.max_depth:
@@ -307,7 +308,8 @@ class AdaBoostClassifier():
 			self.alphaVector.append(1)
 			self.dVectors.append(np.empty(2098))
 
-	def fit(self, X, y):
+	def fit(self, X, y):	if(error == 1.0):
+				print("yikes. error is 100%. stopping.")
 		"""
 		dWeights = np.empty(2098)
 		self.dVectors
@@ -325,9 +327,14 @@ class AdaBoostClassifier():
 			self.trees[i].fit(X, y, self.dVectors[i])
 
 			# Calculate error of trained classifier
-			error = 1 - self.trees[i].accuracy_score(X, y)
+			preds = np.array(self.trees[i].predict(X)).astype("float64").copy()
+			error = np.sum(self.dVectors[i][preds !=y])
+			#error = 1 - self.trees[i].accuracy_score(X, y)
 			print("Error: ", error)
 
+			if(error == 1.0):
+				print("yikes. error is 100%. stopping.")
+				break
 			# Calculate alpha value
 			self.alphaVector[i] = np.log((1-error)/error)/2
 			print("Alpha: ", self.alphaVector[i])
@@ -349,5 +356,12 @@ class AdaBoostClassifier():
 
 		print()
 
-
-193
+	#breaking because of error issue: otherwise should be good?
+	def predict(self, X):
+		sum_vector = np.zeros((X.shape[0])) #initialize sum vector to 0, len num ex
+		for i in range(self.n_trees):
+			preds = np.array(self.trees[i].predict(X)).astype("float64").copy() #a prediction vector
+			preds = preds * self.alphaVector[i]
+			print(i)
+			sum_vector = sum_vector + preds#accumulate
+		return np.sign(sum_vector) #return signs of pred vector

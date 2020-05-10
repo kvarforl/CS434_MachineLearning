@@ -89,6 +89,8 @@ def ada_boost_testing(x_train, y_train, x_test, y_test):
 	y_train[y_train==0] = -1
 	y_test[y_test==0] = -1
 	abclf.fit(x_train, y_train)
+	pred_train = abclf.predict(x_train)
+	print(pred_train)
 	"""
 	preds_train = rclf.predict(x_train)
 	preds_test = rclf.predict(x_test)
