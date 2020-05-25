@@ -44,12 +44,13 @@ class KMeans():
         :param x: input of (n, m)
         :return: labels of (n,). Each labels[i] is the cluster index for sample x[i]
         """
-        #labels = np.zeros((x.shape[0]), dtype=int)
-        labels = []
-        for row in x:
-            distances = [distance.euclidean(row, center) for center in self.centers]
-            labels.append(np.argmin(distances))
+        #apply _predict to each row of x
+        labels = np.apply_along_axis(self._predict, 1, x)
         return np.array(labels)
+
+    def _predict(self, example):
+            distances = [distance.euclidean(example, center) for center in self.centers]
+            return np.argmin(distances)
 
     def get_sse(self, x, labels):
         """
