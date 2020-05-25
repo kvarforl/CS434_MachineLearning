@@ -45,6 +45,7 @@ class KMeans():
         :return: labels of (n,). Each labels[i] is the cluster index for sample x[i]
         """
         #labels = np.zeros((x.shape[0]), dtype=int)
+        labels = []
         for row in x:
             distances = [distance.euclidean(row, center) for center in self.centers]
             labels.append(np.argmin(distances))
@@ -85,11 +86,14 @@ class KMeans():
         :param y: the ground truth class labels
         :return:
         """
-        labels = self.predict(x)
-        purity = 0
-        ##################################
-        #      YOUR CODE GOES HERE       #
-        ##################################
+        cluster_predictions = self.predict(x)
+        majority_class_counts = []
+        for cluster_ind in range(self.k):
+            cluster_class_labels = y[cluster_ind==cluster_predictions]
+            _, class_counts = np.unique(cluster_class_labels, return_counts=True)
+            majority_class_counts.append(class_counts.max())
+        purity = np.sum(majority_class_counts) / x.shape[0]
+        print("purity:",purity)
         return purity
 
     def fit(self, x):
