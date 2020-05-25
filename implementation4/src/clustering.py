@@ -76,6 +76,7 @@ class KMeans():
                 # computer norm squared between value and center, then add to sum
                 sse += np.linalg.norm(x_value - self.centers[cluster_ind]) ** 2
 
+        print("SSE: ", sse)
         return sse
 
     def get_purity(self, x, y):
