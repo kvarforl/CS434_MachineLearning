@@ -124,3 +124,6 @@ if __name__ == '__main__':
         apply_kmeans(args.pca, x_train, y_train, args.kmeans_max_iter, args.kmeans_max_k)
 
     print('Done')
+        ##################################
+        #      YOUR CODE GOES HERE       #
+        ##################################

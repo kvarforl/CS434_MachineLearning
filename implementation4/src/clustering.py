@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy.spatial import distance
 
 class KMeans():
     """
@@ -44,11 +44,11 @@ class KMeans():
         :param x: input of (n, m)
         :return: labels of (n,). Each labels[i] is the cluster index for sample x[i]
         """
-        labels = np.zeros((x.shape[0]), dtype=int)
-        ##################################
-        #      YOUR CODE GOES HERE       #
-        ##################################
-        return labels
+        #labels = np.zeros((x.shape[0]), dtype=int)
+        for row in x:
+            distances = [distance.euclidean(row, center) for center in self.centers]
+            labels.append(np.argmin(distances))
+        return np.array(labels)
 
     def get_sse(self, x, labels):
         """
