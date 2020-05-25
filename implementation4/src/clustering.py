@@ -22,12 +22,9 @@ class KMeans():
         :param x: input of shape (n, m)
         :return: updates the self.centers
         """
+        inds = np.random.choice(x.shape[0], self.k)
+        self.centers = x[inds]
 
-        self.centers = np.zeros((self.k, x.shape[1]))
-
-        ################################
-        #      YOUR CODE GOES HERE     #
-        ################################
 
     def revise_centers(self, x, labels):
         """
