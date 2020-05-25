@@ -59,24 +59,24 @@ class KMeans():
         :param labels: label of (n,)
         :return: float scalar of sse
         """
-
-        ##################################
-        #      YOUR CODE GOES HERE       #
-        ##################################
-
         sse = 0.
+        #sse_notes = 0.
         #cluster_values = x[labels==self.k]
         cluster_values = []
 
         # for each cluster
         for cluster_ind in range(self.k):
             cluster_values = x[labels==cluster_ind]
+            #mu = cluster_values.sum() / len(cluster_values)
+
             # for each value in the cluster
             for x_value in cluster_values:
                 # computer norm squared between value and center, then add to sum
                 sse += np.linalg.norm(x_value - self.centers[cluster_ind]) ** 2
+                #sse_notes += np.linalg.norm(x_value - mu) ** 2
 
         print("SSE: ", sse)
+        #print("SSE_notes: ", sse)
         return sse
 
     def get_purity(self, x, y):
