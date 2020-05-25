@@ -63,6 +63,10 @@ class KMeans():
         ##################################
 
         sse = 0.
+
+
+
+
         return sse
 
     def get_purity(self, x, y):
