@@ -64,18 +64,16 @@ class KMeans():
         ##################################
 
         sse = 0.
+        #cluster_values = x[labels==self.k]
+        cluster_values = []
 
-        for k_center in self.centers:
-            cluster_values = x[==y]
-            for
-        for row in x:
-            distances = [distance.euclidean(row, center) for center in self.centers]
-
-            #labels.append(np.argmin(distances))
-        #return np.array(labels)
-
-
-
+        # for each cluster
+        for cluster_ind in range(self.k):
+            cluster_values = x[labels==cluster_ind]
+            # for each value in the cluster
+            for x_value in cluster_values:
+                # computer norm squared between value and center, then add to sum
+                sse += np.linalg.norm(x_value - self.centers[cluster_ind]) ** 2
 
         return sse
 
