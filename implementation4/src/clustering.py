@@ -64,6 +64,15 @@ class KMeans():
 
         sse = 0.
 
+        for k_center in self.centers:
+            cluster_values = x[==y]
+            for
+        for row in x:
+            distances = [distance.euclidean(row, center) for center in self.centers]
+
+            #labels.append(np.argmin(distances))
+        #return np.array(labels)
+
 
 
 
