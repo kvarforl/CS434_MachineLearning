@@ -2,3 +2,4 @@
 *.vscode/*
 *.zip
 *__pycache__*
+*.pyc
