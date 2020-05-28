@@ -91,9 +91,6 @@ def apply_kmeans(do_pca, x_train, y_train, kmeans_max_iter, kmeans_max_k):
     train_sses_vs_k = []
     train_purities_vs_k = []
 
-    ##################################
-    #      YOUR CODE GOES HERE       #
-    ##################################
     #plot average SSE vs iterations, k=6
     iter_trials = []
     for _ in range(5):
@@ -105,6 +102,8 @@ def apply_kmeans(do_pca, x_train, y_train, kmeans_max_iter, kmeans_max_k):
     plot_y_vs_x(sses_list, x_label='iter', y_label='sse',
                      save_path='plot_sse_vs_iter_%d'%do_pca)        
 
+    #plot sse vs k, iter = kmeans_max_iter from cmd line args
+    #plot purity vs k, iter = ''
     k_trials_sse = []
     k_trials_purity = []
     for k in range(1,11):
@@ -126,20 +125,6 @@ def apply_kmeans(do_pca, x_train, y_train, kmeans_max_iter, kmeans_max_k):
     plot_y_vs_x(purity_list, x_label='k', y_label='purity',
                      save_path='plot_purity_vs_k_%d'%do_pca)        
 
-    # for k in range(1, kmeans_max_k):
-    #     kmeans = KMeans(k, kmeans_max_iter)
-    #     sse_vs_iter = kmeans.fit(x_train)
-    #     train_sses_vs_iter.append(sse_vs_iter)
-    #     train_purities_vs_k.append(kmeans.get_purity(x_train, y_train))
-    #     train_sses_vs_k.append(min(sse_vs_iter))
-
-
-    # plot_y_vs_x_list(train_sses_vs_iter, x_label='iter', y_label='sse',
-    #                  save_path='plot_sse_vs_k_subplots_%d'%do_pca)
-    # plot_y_vs_x(train_sses_vs_k, x_label='k', y_label='sse',
-    #             save_path='plot_sse_vs_k_%d'%do_pca)
-    # plot_y_vs_x(train_purities_vs_k, x_label='k', y_label='purities',
-    #             save_path='plot_purity_vs_k_%d'%do_pca)
 
 
 
