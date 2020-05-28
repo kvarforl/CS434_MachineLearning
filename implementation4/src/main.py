@@ -82,6 +82,8 @@ def visualize(x_train, y_train):
     #      YOUR CODE GOES HERE       #
     ##################################
 
+    #A maybe helpful link for plotting scatters
+    #https://matplotlib.org/gallery/shapes_and_collections/scatter.html#sphx-glr-gallery-shapes-and-collections-scatter-py
 
 def apply_kmeans(do_pca, x_train, y_train, kmeans_max_iter, kmeans_max_k):
     print('kmeans\n')

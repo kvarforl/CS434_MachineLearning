@@ -63,9 +63,13 @@ class PCA():
         self.eig_vecs = None
 
         x = x - PCA.mean(x)
+        
         ########################################
         #       YOUR CODE GOES HERE            #
         ########################################
+        #based this entirely on doc strings and input shapes :)
+        covar = cov(x)
+        self.eig_vals, self.eig_vecs = eig(covar)
 
 
     def transform(self, x):
