@@ -49,8 +49,15 @@ class KMeans():
         return np.array(labels)
 
     def _predict(self, example):
-            distances = [distance.euclidean(example, center) for center in self.centers]
-            return np.argmin(distances)
+        distances = [distance.euclidean(example, center) for center in self.centers]
+        return np.argmin(distances)
+
+    def get_sse_inner_map(self, x_value, idx):
+        return distance.euclidean(x_value, self.centers[idx]) ** 2
+
+    def get_sse_outer_map(self, cluster_ind, x, labels):
+        cluster_values = x[labels==cluster_ind]
+        return np.add.reduce(list(map(lambda n: self.get_sse_inner_map(n, idx=cluster_ind), cluster_values)))
 
     def get_sse(self, x, labels):
         """
@@ -62,22 +69,26 @@ class KMeans():
         sse = 0.
         #sse2 = 0.
 
+        cluster_indexes = range(self.k)
+        sse = np.add.reduce(list(map(lambda n: self.get_sse_outer_map(n, x=x, labels=labels), cluster_indexes)))
+
+        """
         # for each cluster
         for cluster_ind in range(self.k):
             cluster_values = x[labels==cluster_ind]
-            #print("cluster value count: ", len(cluster_values))
             #mu = np.add.reduce(cluster_values) / len(cluster_values)
             #print("mu: ", mu)
 
+            #sse2 += np.add.reduce(list(map(lambda n: self.get_sse_inner_map(n, idx=cluster_ind), cluster_values)))
+
             # for each value in the cluster
             for x_value in cluster_values:
-                # computer norm squared between value and center, then add to sum
-                #sse += np.linalg.norm(x_value - self.centers[cluster_ind]) ** 2
                 sse += distance.euclidean(x_value, self.centers[cluster_ind]) ** 2
                 #sse2 += distance.euclidean(x_value, mu) ** 2 # Comparing with calculated center
+        """
 
         #print("SSE: ", sse)
-        #print("SSE with calculated center: ", sse2)
+        #print("SSE2: ", sse2)
         return sse
 
     def get_purity(self, x, y):
