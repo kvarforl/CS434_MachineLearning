@@ -68,8 +68,8 @@ class PCA():
         #       YOUR CODE GOES HERE            #
         ########################################
         #based this entirely on doc strings and input shapes :)
-        covar = cov(x)
-        self.eig_vals, self.eig_vecs = eig(covar)
+        covar = PCA.cov(x)
+        self.eig_vals, self.eig_vecs = PCA.eig(covar)
 
 
     def transform(self, x):
