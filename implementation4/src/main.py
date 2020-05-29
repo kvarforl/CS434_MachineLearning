@@ -77,13 +77,10 @@ def plot_y_vs_x(ys_vs_x, x_label, y_label, save_path):
 
 
 def visualize(x_train, y_train):
-    pass
-    ##################################
-    #      YOUR CODE GOES HERE       #
-    ##################################
-
-    #A maybe helpful link for plotting scatters
-    #https://matplotlib.org/gallery/shapes_and_collections/scatter.html#sphx-glr-gallery-shapes-and-collections-scatter-py
+    colors = y_train
+    plt.scatter(x_train.T[0], x_train.T[1], c=colors )
+    plt.show()
+    plt.savefig("reduced_clusters.png")
 
 def apply_kmeans(do_pca, x_train, y_train, kmeans_max_iter, kmeans_max_k):
     print('kmeans\n')
