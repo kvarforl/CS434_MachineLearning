@@ -49,15 +49,15 @@ class PCA():
         eigvec = np.real(eigvec)
         return eigval, eigvec
 
-    def find_k(self):
+    def find_k(self, sorted_eig_vals):
         # Find total variance multiplied by retain ratio
-        threshold = sum(self.eig_vals) * self.retain_ratio
+        threshold = sum(sorted_eig_vals) * self.retain_ratio
 
         # Add to a running sum until the sum is greater than the threshold
         count = 0
         running_sum = 0
         while (running_sum < threshold):
-            running_sum += eig_vals[count]
+            running_sum += sorted_eig_vals[count]
             count += 1
 
         # Return calculated k
@@ -88,7 +88,35 @@ class PCA():
 
         # sort eigen values and vectors : greatest to least
 
-        k = find_k()
+        """
+        print("unsorted")
+        print (self.eig_vecs)
+        print (self.eig_vals)
+        """
+
+        sorted_eig_vecs = self.eig_vecs[self.eig_vals.argsort()]
+        sorted_eig_vals = np.sort(self.eig_vals)
+
+        sorted_eig_vecs = sorted_eig_vecs[::-1]
+        sorted_eig_vals = sorted_eig_vals[::-1]
+
+
+        """
+        print("sorted")
+        print (sorted_eig_vecs)
+        print (sorted_eig_vals)
+        """
+
+        k = self.find_k(sorted_eig_vals)
+
+        print("dims: ", self.eig_vecs.shape)
+
+        # Only take the biggest k eigan value vector pairs
+        self.eig_vecs = sorted_eig_vecs.T[:k].T
+        self.eig_vals = sorted_eig_vals.T[:k].T
+
+        print("post-slice dims: ", self.eig_vecs.shape)
+
 
 
 
