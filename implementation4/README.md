@@ -6,7 +6,7 @@ cd src
 python3 main.py
 ```
 
-Code for k-means clustering can be found in src/clustering.py. src/main.py includes functions for generating plots to visualize the algorithms. 
+Code for k-means clustering can be found in src/clustering.py. Code for dimension reduction can be found in src/decompose.py. src/main.py includes functions for generating plots to visualize the algorithms. 
 Code can also be run for specific classifier generation and testing ->
 
 K-Means Clustering:
