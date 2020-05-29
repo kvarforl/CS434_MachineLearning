@@ -79,8 +79,9 @@ def plot_y_vs_x(ys_vs_x, x_label, y_label, save_path):
 def visualize(x_train, y_train):
     colors = y_train
     plt.scatter(x_train.T[0], x_train.T[1], c=colors )
-    plt.show()
     plt.savefig("reduced_clusters.png")
+    plt.show()
+    
 
 def apply_kmeans(do_pca, x_train, y_train, kmeans_max_iter, kmeans_max_k):
     print('kmeans\n')
