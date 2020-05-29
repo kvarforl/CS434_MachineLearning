@@ -49,6 +49,21 @@ class PCA():
         eigvec = np.real(eigvec)
         return eigval, eigvec
 
+    def find_k(self):
+        # Find total variance multiplied by retain ratio
+        threshold = sum(self.eig_vals) * self.retain_ratio
+
+        # Add to a running sum until the sum is greater than the threshold
+        count = 0
+        running_sum = 0
+        while (running_sum < threshold):
+            running_sum += eig_vals[count]
+            count += 1
+
+        # Return calculated k
+        return count
+
+
 
     def fit(self, x):
         """
@@ -63,13 +78,19 @@ class PCA():
         self.eig_vecs = None
 
         x = x - PCA.mean(x)
-        
+
         ########################################
         #       YOUR CODE GOES HERE            #
         ########################################
         #based this entirely on doc strings and input shapes :)
         covar = cov(x)
         self.eig_vals, self.eig_vecs = eig(covar)
+
+        # sort eigen values and vectors : greatest to least
+
+        k = find_k()
+
+
 
 
     def transform(self, x):
