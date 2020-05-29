@@ -118,9 +118,6 @@ class PCA():
         print("post-slice dims: ", self.eig_vecs.shape)
 
 
-
-
-
     def transform(self, x):
         """
         projects x into lower dimension based on current eig_vals and eig_vecs

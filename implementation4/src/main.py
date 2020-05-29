@@ -134,6 +134,19 @@ if __name__ == '__main__':
         pca.fit(x_train)
         x_train = pca.transform(x_train)
         visualize(x_train, y_train)
+        k_trials_purity = []
+        for k in range(1,11):
+            k_purities = []
+            for _ in range(5):
+                kmeans = KMeans(k, args.kmeans_max_iter)
+                sses = kmeans.fit(x_train)
+                k_purities.append(kmeans.get_purity(x_train, y_train))
+
+            k_trials_purity.append(np.mean(k_purities))
+    
+        purity_list = k_trials_purity
+        plot_y_vs_x(purity_list, x_label='k', y_label='purity',
+                     save_path='plot_purity_vs_k_with_pca')        
 
     if args.kmeans == 1:
         apply_kmeans(args.pca, x_train, y_train, args.kmeans_max_iter, args.kmeans_max_k)
