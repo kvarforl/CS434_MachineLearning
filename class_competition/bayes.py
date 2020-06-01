@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import argparse
+import re
 from string import punctuation
 
 
@@ -21,8 +22,14 @@ def load_data():
 #function takes in a space delimited string and returns a cleaned list of words
 #presently does not omit numbers (but it easily could)
 def _clean_text(review):
-    translator = str.maketrans('','',punctuation)
-    return np.array(str(review).translate(translator).lower().split())
+    
+    review = str(review)
+    #omit URLS
+    review = re.sub(r'^https?:\/\/.*[\r\n]*', '', review)
+
+    #ignore case, separate on whitespace
+    review = review.lower().split()
+    return np.array(review)
 
 #takes in pandas df of test and train data
 def clean_train_data(train):
