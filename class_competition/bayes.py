@@ -26,14 +26,14 @@ def _clean_text(review):
 
 #takes in pandas df of test and train data
 def clean_train_data(train):
-    pos = np.array(train.loc[train["sentiment"] == "positive"]) #create np matrix out of pos rows
-    neg = np.array(train.loc[train["sentiment"] == "negative"]) #create np matrix out of neg rows
+    pos = train.loc[train["sentiment"] == "positive"].to_numpy() #create np matrix out of pos rows
+    neg = train.loc[train["sentiment"] == "negative"].to_numpy() #create np matrix out of neg rows
     
     _, posTweets, posSelectedTxt, _ = pos.T
     _, negTweets, negSelectedTxt, _ = neg.T
     
-    posVocab = np.unique(_clean_text(posSelectedTxt))
-    negVocab = np.unique(_clean_text(negSelectedTxt))
+    posVocab = np.unique(_clean_text(list(posSelectedTxt)))
+    negVocab = np.unique(_clean_text(list(negSelectedTxt)))
 
     cT = [_clean_text(x) for x in posTweets]
     cS = [_clean_text(x) for x in posSelectedTxt]
@@ -65,18 +65,38 @@ def accuracy_score(preds, labels):
     return correct / labels.shape[0]
 
 class BinomialBayesClassifier():
+    
+    def __init__(self, posVocab, negVocab, neutralVocab, total_train_examples):
+        self.master_vocab = {
+            "positive": posVocab,
+            "negative": negVocab,
+            "neutral": neutralVocab
+        }
+        self.total = total_train_examples
+        self.probability_vectors = {} #holds p_words given class after fit
+        self.probabilities = {} #holds probability of sentiment after fit
+   
 
-    def fit(self, trainX, trainY, vocab):
-        self.vocab = vocab
-        self.train_bow = self._bag_words(trainX)#only saved for access for assignment output
-        self.pos_wordprobs, self.neg_wordprobs = self._p_words_given_class(self.train_bow, trainY)
+    #hmmm do we need trainY here? don't think so but eh
+    def fit(self, trainX, sentiment):
+        if sentiment == "positive" or sentiment == "negative" or sentiment == "neutral":
+            self.vocab = self.master_vocab[sentiment]
+        else:
+            print("Error in Fit: sentiment must be \"positive\", \"negative\", or \"neutral\"")
+            return
 
+        train_bow = self._bag_words(trainX)#only saved for access for assignment output
+        self.probability_vectors[sentiment] = self._p_words_given_class(train_bow)
+        self.probabilities[sentiment] = trainX.shape[0] / self.total
+
+    #INCOMPLETE
     #takes in jagged np array of strings of examples
     def predict(self, X):
         self.test_bow = self._bag_words(X) #only saved for access for assignment output
         preds = [self._predict(x) for x in self.test_bow]
         return np.array(preds)
 
+    #INCOMPLETE
     #predict a single example
     def _predict(self, x):
         if self._p_class_given_x(x, "pos") > self._p_class_given_x(x,"neg"):
@@ -100,18 +120,14 @@ class BinomialBayesClassifier():
     #function for training
     #takes training features BOW (X), training labels (Y), and optional uniform dirichlet prior value (default 1)
     #also sets self.ppos and self.pneg
-    #returns 2 row vectors of probabilities - [p(w0|y=0), p(w1|y=0)...], [p(w0|y=1), p(w1|y=1)...]    
-    def _p_words_given_class(self, X, y, alpha=1):
-        class1_examples = X[y==1] #positive reviews
-        class0_examples = X[y==0] #negative reviews
-        num_c1, _ = class1_examples.shape
-        num_c0, _ = class0_examples.shape
-        self.ppos = num_c1 / (num_c1 + num_c0)
-        self.pneg = 1 - self.ppos
-        c1_numerator = np.sum(class1_examples, axis=0) + alpha #vector of word occurances in class 1 + alpha
-        c0_numerator = np.sum(class0_examples, axis=0) + alpha # '' in class 0 
-        return (c1_numerator/num_c1), (c0_numerator/num_c0)
+    #returns 2 row vectors of probability_vectors - [p(w0|y=0), p(w1|y=0)...], [p(w0|y=1), p(w1|y=1)...]    
+    def _p_words_given_class(self, X, alpha=1):
+        numerator = np.sum(X, axis=0) +alpha#vector of word counts in features matrix + alpha
+        denominator = np.sum(numerator)   #total number of words in class + |V|alpha
+        return numerator / denominator
+        
 
+    #INCOMPLETE
     #helper function for _predict; calculates probability of example X being in class cl ("pos" or "neg")
     def _p_class_given_x(self, x, cl):
         if cl == "pos":
@@ -125,12 +141,12 @@ posTrain, negTrain, posVocab, negVocab = clean_train_data(train)
 posTrainX, posTrainY = posTrain
 negTrainX, negTrainY = negTrain
 
-# trainX, trainY = train
-# testX, testY = test
+#need to add neutral vocab, but haven't yet
+classifier = BinomialBayesClassifier(posVocab, negVocab, negVocab, len(train.index) )
 
-# classifier = BinomialBayesClassifier()
-
-# classifier.fit(trainX, trainY, vocabulary)
+classifier.fit(posTrainX, "positive")
+classifier.fit(negTrainX, "negative")
+#call fit on neutral data too.
 
 # train_predictions = classifier.predict(trainX)
 # test_predictions = classifier.predict(testX)
