@@ -14,3 +14,6 @@ The project in this directory classifies movie reviews as positive or negative u
 ### [implementation3/](https://github.com/kvarforl/CS434_MachineLearning/tree/master/implementation3)
 
 This directory contains project code for a decision tree ensemble to predict election results from US county statistics. It contains code that generates a basic **Decision Tree Classifier**, in addition to a **Random Forest** generator, and an implementation **AdaBoost**. 
+
+Code authored by me and [Aiden Nelson](https://github.com/Aidenjn) unless otherwise attributed.
+
