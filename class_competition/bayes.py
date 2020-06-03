@@ -195,7 +195,7 @@ classifier.fit(negTrainX, "negative")
 #call fit on neutral data too.
 
 # Get phrases based off of tweets and associated sentiments
-train_predictions = classifier.predict_tweets(train[['text', 'sentiment']])
+#train_predictions = classifier.predict_tweets(train[['text', 'sentiment']])
 # test_predictions = classifier.predict(testX)
 
 # Compare predicted phrases with actual phrases
