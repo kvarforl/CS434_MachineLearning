@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import argparse
+import re
 from string import punctuation
 from itertools import combinations
 
@@ -22,8 +23,14 @@ def load_data():
 #function takes in a space delimited string and returns a cleaned list of words
 #presently does not omit numbers (but it easily could)
 def _clean_text(review):
-    translator = str.maketrans('','',punctuation)
-    return np.array(str(review).translate(translator).lower().split())
+    
+    review = str(review)
+    #omit URLS
+    review = re.sub(r'^https?:\/\/.*[\r\n]*', '', review)
+
+    #ignore case, separate on whitespace
+    review = review.lower().split()
+    return np.array(review)
 
 #takes in pandas df of test and train data
 def clean_train_data(train):
@@ -49,21 +56,18 @@ def clean_train_data(train):
     #all text fields are now a jagged array of cleaned examples
     return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), posVocab, negVocab
 
-#really just for assignment specifications; outputs comma delimited text file of preprocess results
-def output_info(bow, labels, vocab, filename):
-    with open(filename,"w") as fp:
-        print(*vocab, "classlabel", sep=",", file=fp)
-        n_examples = bow.shape[0]
-        for ind in range(n_examples):
-            if(labels != []):
-                print(*bow[ind], labels[ind], sep=",", file=fp)
-            else:
-                print(*bow[ind], sep=",", file=fp)
+def _jaccard(str1, str2): 
+    a = set(str1.lower().split()) 
+    b = set(str2.lower().split())
+    c = a.intersection(b)
+    return float(len(c)) / (len(a) + len(b) - len(c))
 
-#expects 1D np arrays of equal dimensions
-def accuracy_score(preds, labels):
-    correct = np.count_nonzero(preds==labels)
-    return correct / labels.shape[0]
+#expects 1D np arrays of equal dimensions: 
+def accuracy_score(predicted, actual):  
+    num_examples = actual.shape[0]
+    jaccards = [_jaccard(predicted[i],actual[i]) for i in range(num_examples)]
+    score = np.sum(jaccards) / num_examples  
+    return score
 
 class BinomialBayesClassifier():
 
