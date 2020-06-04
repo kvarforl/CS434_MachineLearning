@@ -78,52 +78,29 @@ def accuracy_score(predicted, actual):
 
 class BinomialBayesClassifier():
 
-    def __init__(self, posVocab, negVocab, neutralVocab, total_train_examples):
+    def __init__(self, posVocab, negVocab, total_train_examples):
         self.master_vocab = {
             "positive": posVocab,
             "negative": negVocab,
-            "neutral": neutralVocab
         }
         self.total = total_train_examples
         self.probability_vectors = {} #holds p_words given class after fit
         self.probabilities = {} #holds probability of sentiment after fit
 
-
-    #hmmm do we need trainY here? don't think so but eh
     def fit(self, trainX, sentiment):
-        # if sentiment == "positive" or sentiment == "negative" or sentiment == "neutral":
-        #     self.vocab = self.master_vocab[sentiment]
-        # else:
-        #     print("Error in Fit: sentiment must be \"positive\", \"negative\", or \"neutral\"")
-        #     return
-
-        train_bow = self._bag_words(trainX, sentiment)#only saved for access for assignment output
+        train_bow = self._bag_words(trainX, sentiment)
         self.probability_vectors[sentiment] = self._p_words_given_class(train_bow)
         self.probabilities[sentiment] = trainX.shape[0] / self.total
 
 
     def extract_phrases(self, tweet):
-        #print("extracting phrases from")
-        #print(tweet[1][0])
-
         subphrases = []
-        #full_phrase = tweet[1][0]
-        full_phrase = tweet
-        #print()
-        #print("Subphrases for: ", full_phrase)
-        #if (full_phrase != "" and not isinstance(full_phrase, float)):
-        #    words = full_phrase.split()
-        words = full_phrase
+        words = tweet
         for strt, end in combinations(range(len(words) + 1), 2):
-            #print(words[strt:end])
             subphrases.append(words[strt:end])
 
         return subphrases
 
-
-    #INCOMPLETE
-    #takes in np array of tweets and sentiments
-    #returns predicted phrases for each tweet
     def predict_tweets(self, X, sentiment):
         # For each tweet and sentiment pair, get predicted phrase
         preds = [self.predict_tweet(x, sentiment) for x in X]
@@ -132,36 +109,20 @@ class BinomialBayesClassifier():
 
     def predict_tweet(self, X, sentiment):
         # Extract phrases from tweet
-        #check for neutral tweet and return whole tweetnegative
+        #check for neutral tweet and return whole tweet
         if sentiment == "neutral":
             return X
         if not list(X):
             return ""
         phrases = self.extract_phrases(X)
         pos_bow = self._bag_words(np.array(phrases), "positive")
-        #print("pos_bow:", pos_bow)
         neg_bow = self._bag_words(np.array(phrases), "negative")
         bow_pred = self._predict(pos_bow,neg_bow, sentiment)
-        #turn list of words back into string
-        #print("bow_pred:", bow_pred)
         pred_inds = np.where(bow_pred == 1)
-        #print("pred_inds:", pred_inds)
         prediction = self.master_vocab[sentiment][pred_inds]
-        #print("pred word list:", prediction)
         prediction = " ".join(prediction)
-        #print("prediction:", prediction)
         return prediction
 
-
-        # Turn each tweet into bag of words
-        """
-        self.test_bow = self._bag_words(X) #only saved for access for assignment output
-        preds = [self._predict(x) for x in self.test_bow]
-        return np.array(preds)
-
-        """
-
-    #INCOMPLETE
     #predict a single example
     #x is  bow phrases of a whole tweet
     def _predict(self, pos_bow,neg_bow, sentiment):
@@ -175,10 +136,7 @@ class BinomialBayesClassifier():
                 posprob = np.sum(self.probability_vectors["positive"][pinds])
                 negprob =np.sum(self.probability_vectors["negative"][ninds])
                 probs.append(posprob-negprob)
-            #print("bow", pos_bow)
-            #print("probs", probs, len(probs))
             predict_ind = np.argmax(probs)
-            #print("predict phrase at row:", predict_ind)
             return pos_bow[predict_ind]
 
         elif sentiment == "negative":
@@ -220,13 +178,13 @@ class BinomialBayesClassifier():
         return numerator / denominator
 
 
-    #INCOMPLETE
+    #INCOMPLETE/ we never use this... but i understand why. leaving it here in case it strike inspiration
     #helper function for _predict; calculates probability of example X being in class cl ("pos" or "neg")
-    def _p_class_given_x(self, x, cl):
-        if cl == "pos":
-            return np.sum(x*np.log(self.pos_wordprobs)) + np.log(self.ppos)
-        else:
-            return np.sum(x*np.log(self.neg_wordprobs)) + np.log(self.pneg)
+    # def _p_class_given_x(self, x, cl):
+    #     if cl == "pos":
+    #         return np.sum(x*np.log(self.pos_wordprobs)) + np.log(self.ppos)
+    #     else:
+    #         return np.sum(x*np.log(self.neg_wordprobs)) + np.log(self.pneg)
 
 
 train, test = load_data()
@@ -236,12 +194,10 @@ negTrainX, negTrainY = negTrain
 neutralTrainX, neutralTrainY = neutralTrain
 
 
-#need to add neutral vocab, but haven't yet
-classifier = BinomialBayesClassifier(posVocab, negVocab, negVocab, len(train.index) )
+classifier = BinomialBayesClassifier(posVocab, negVocab, len(train.index) )
 
 classifier.fit(posTrainX, "positive")
 classifier.fit(negTrainX, "negative")
-#call fit on neutral data too.
 
 posPreds = classifier.predict_tweets(posTrainX, "positive")
 negPreds = classifier.predict_tweets(negTrainX, "negative")
@@ -251,30 +207,10 @@ posscore = accuracy_score(posPreds, posTrainY)
 negscore = accuracy_score(negPreds, negTrainY)
 neutralscore = accuracy_score(neutralPreds, neutralTrainY)
 
-#print(posscore)
-#numpy.savetxt("submission.csv", submitValues, delimeter=",")
 
 print("Total Score:", (posscore+negscore+neutralscore)/3)
 print("neg:", negscore, "pos:", posscore)
-# Get phrases based off of tweets and associated sentiments
-#train_predictions = classifier.predict_tweets(train[['text', 'sentiment']])
-# test_predictions = classifier.predict(testX)
 
-# Compare predicted phrases with actual phrases
-# train_accuracy = accuracy_score(train_predictions,trainY)
-# test_accuracy = accuracy_score(test_predictions, testY)
-
-# output_info(classifier.train_bow, trainY, vocabulary, "preprocessed_train.txt")
-# output_info(classifier.test_bow, testY, vocabulary, "preprocessed_test.txt")
-
-# with open("results.txt","w") as fp:
-#     print("Results from ./trainingSet.txt and ./testSet.txt:",file=fp)
-#     print("\tTrain Accuracy:", train_accuracy, file=fp)
-#     print("\tTest Accuracy:", test_accuracy, file=fp)
-
-# print("Results from ./trainingSet.txt and ./testSet.txt:")
-# print("\tTrain Accuracy:", train_accuracy)
-# print("\tTest Accuracy:", test_accuracy)
 
 
 
