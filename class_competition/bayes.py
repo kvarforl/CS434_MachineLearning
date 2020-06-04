@@ -36,9 +36,10 @@ def _clean_text(review):
 def clean_train_data(train):
     pos = train.loc[train["sentiment"] == "positive"].to_numpy() #create np matrix out of pos rows
     neg = train.loc[train["sentiment"] == "negative"].to_numpy() #create np matrix out of neg rows
-
+    neutral = train.loc[train["sentiment"] == "neutral"].to_numpy()
     _, posTweets, posSelectedTxt, _ = pos.T
     _, negTweets, negSelectedTxt, _ = neg.T
+    _, neutralTweets, neutralSelectedTxt, _ = neutral.T
 
     posVocab = np.unique(_clean_text(list(posSelectedTxt)))
     negVocab = np.unique(_clean_text(list(negSelectedTxt)))
@@ -55,8 +56,12 @@ def clean_train_data(train):
     negTweets = np.array(cT)
     negSelectedTxt = np.array(cS)
 
+    cT = [_clean_text(x) for x in neutralTweets]
+    cS = [_clean_text(x) for x in neutralSelectedTxt]
+    neutralTweets = np.array(cT)
+    neutralSelectedTxt = np.array(cS)
     #all text fields are now a jagged array of cleaned examples
-    return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), posVocab, negVocab
+    return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), (neutralTweets, neutralSelectedTxt), posVocab, negVocab
 
 def _jaccard(str1, str2):
     a = set(str1.lower().split())
@@ -104,7 +109,7 @@ class BinomialBayesClassifier():
         subphrases = []
         #full_phrase = tweet[1][0]
         full_phrase = tweet
-        print()
+        #print()
         #print("Subphrases for: ", full_phrase)
         #if (full_phrase != "" and not isinstance(full_phrase, float)):
         #    words = full_phrase.split()
@@ -119,18 +124,22 @@ class BinomialBayesClassifier():
     #INCOMPLETE
     #takes in np array of tweets and sentiments
     #returns predicted phrases for each tweet
-    def predict_tweets(self, X):
+    def predict_tweets(self, X, sentiment):
         # For each tweet and sentiment pair, get predicted phrase
-        preds = [self.predict_tweet(x) for x in X]
+        preds = [self.predict_tweet(x, sentiment) for x in X]
         return np.array(preds)
 
 
     def predict_tweet(self, X, sentiment):
         # Extract phrases from tweet
         #check for neutral tweet and return whole tweetnegative
+        if sentiment == "neutral":
+            return X
+        if not list(X):
+            return ""
         phrases = self.extract_phrases(X)
         pos_bow = self._bag_words(np.array(phrases), "positive")
-        print("pos_bow:", pos_bow)
+        #print("pos_bow:", pos_bow)
         neg_bow = self._bag_words(np.array(phrases), "negative")
         bow_pred = self._predict(pos_bow,neg_bow, sentiment)
         #turn list of words back into string
@@ -221,10 +230,10 @@ class BinomialBayesClassifier():
 
 
 train, test = load_data()
-posTrain, negTrain, posVocab, negVocab = clean_train_data(train)
+posTrain, negTrain, neutralTrain, posVocab, negVocab = clean_train_data(train)
 posTrainX, posTrainY = posTrain
 negTrainX, negTrainY = negTrain
-
+neutralTrainX, neutralTrainY = neutralTrain
 
 
 #need to add neutral vocab, but haven't yet
@@ -236,11 +245,14 @@ classifier.fit(negTrainX, "negative")
 
 posPreds = classifier.predict_tweets(posTrainX, "positive")
 negPreds = classifier.predict_tweets(negTrainX, "negative")
+neutralPreds = classifier.predict_tweets(neutralTrainX, "neutral")
 
 posscore = accuracy_score(posPreds, posTrainY)
 negscore = accuracy_score(negPreds, negTrainY)
+neutralscore = accuracy_score(neutralPreds, neutralTrainY)
 
-print("Total Score:", posscore+negscore)
+print("Total Score:", (posscore+negscore+neutralscore)/3)
+print("neg:", negscore, "pos:", posscore)
 # Get phrases based off of tweets and associated sentiments
 #train_predictions = classifier.predict_tweets(train[['text', 'sentiment']])
 # test_predictions = classifier.predict(testX)
