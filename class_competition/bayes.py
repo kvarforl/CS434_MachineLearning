@@ -23,7 +23,7 @@ def load_data():
 #function takes in a space delimited string and returns a cleaned list of words
 #presently does not omit numbers (but it easily could)
 def _clean_text(review):
-    
+
     review = str(review)
     #omit URLS
     review = re.sub(r'^https?:\/\/.*[\r\n]*', '', review)
@@ -58,17 +58,17 @@ def clean_train_data(train):
     #all text fields are now a jagged array of cleaned examples
     return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), posVocab, negVocab
 
-def _jaccard(str1, str2): 
-    a = set(str1.lower().split()) 
+def _jaccard(str1, str2):
+    a = set(str1.lower().split())
     b = set(str2.lower().split())
     c = a.intersection(b)
     return float(len(c)) / (len(a) + len(b) - len(c))
 
-#expects 1D np arrays of equal dimensions: 
-def accuracy_score(predicted, actual):  
+#expects 1D np arrays of equal dimensions:
+def accuracy_score(predicted, actual):
     num_examples = actual.shape[0]
     jaccards = [_jaccard(predicted[i],actual[i]) for i in range(num_examples)]
-    score = np.sum(jaccards) / num_examples  
+    score = np.sum(jaccards) / num_examples
     return score
 
 class BinomialBayesClassifier():
@@ -109,7 +109,7 @@ class BinomialBayesClassifier():
         #if (full_phrase != "" and not isinstance(full_phrase, float)):
         #    words = full_phrase.split()
         words = full_phrase
-        for strt, end in combinations(range(len(words)), 2):
+        for strt, end in combinations(range(len(words) + 1), 2):
             #print(words[strt:end])
             subphrases.append(words[strt:end])
 
@@ -137,7 +137,7 @@ class BinomialBayesClassifier():
         #print("bow_pred:", bow_pred)
         pred_inds = np.where(bow_pred == 1)
         #print("pred_inds:", pred_inds)
-        prediction = self.master_vocab[sentiment][pred_inds] 
+        prediction = self.master_vocab[sentiment][pred_inds]
         #print("pred word list:", prediction)
         prediction = " ".join(prediction)
         #print("prediction:", prediction)
@@ -183,7 +183,7 @@ class BinomialBayesClassifier():
                 probs.append(negprob - posprob)
             predict_ind = np.argmax(probs)
             return neg_bow[predict_ind]
-       
+
         else:
             print(str(sentiment)+"must be \"positive\" or \"negative\".")
             return
