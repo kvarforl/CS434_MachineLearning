@@ -42,6 +42,8 @@ def clean_train_data(train):
 
     posVocab = np.unique(_clean_text(list(posSelectedTxt)))
     negVocab = np.unique(_clean_text(list(negSelectedTxt)))
+    # posVocab = np.unique(_clean_text(list(posTweets)))
+    # negVocab = np.unique(_clean_text(list(negTweets)))
 
     cT = [_clean_text(x) for x in posTweets]
     cS = [_clean_text(x) for x in posSelectedTxt]
@@ -84,13 +86,13 @@ class BinomialBayesClassifier():
 
     #hmmm do we need trainY here? don't think so but eh
     def fit(self, trainX, sentiment):
-        if sentiment == "positive" or sentiment == "negative" or sentiment == "neutral":
-            self.vocab = self.master_vocab[sentiment]
-        else:
-            print("Error in Fit: sentiment must be \"positive\", \"negative\", or \"neutral\"")
-            return
+        # if sentiment == "positive" or sentiment == "negative" or sentiment == "neutral":
+        #     self.vocab = self.master_vocab[sentiment]
+        # else:
+        #     print("Error in Fit: sentiment must be \"positive\", \"negative\", or \"neutral\"")
+        #     return
 
-        train_bow = self._bag_words(trainX)#only saved for access for assignment output
+        train_bow = self._bag_words(trainX, sentiment)#only saved for access for assignment output
         self.probability_vectors[sentiment] = self._p_words_given_class(train_bow)
         self.probabilities[sentiment] = trainX.shape[0] / self.total
 
@@ -100,14 +102,16 @@ class BinomialBayesClassifier():
         #print(tweet[1][0])
 
         subphrases = []
-        full_phrase = tweet[1][0]
+        #full_phrase = tweet[1][0]
+        full_phrase = tweet
         print()
-        print("Subphrases for: ", full_phrase)
-        if (full_phrase != "" and not isinstance(full_phrase, float)):
-            words = full_phrase.split()
-            for strt, end in combinations(range(len(words)), 2):
-                print(words[strt:end])
-                subphrases.append(words[strt:end])
+        #print("Subphrases for: ", full_phrase)
+        #if (full_phrase != "" and not isinstance(full_phrase, float)):
+        #    words = full_phrase.split()
+        words = full_phrase
+        for strt, end in combinations(range(len(words)), 2):
+            #print(words[strt:end])
+            subphrases.append(words[strt:end])
 
         return subphrases
 
@@ -117,14 +121,27 @@ class BinomialBayesClassifier():
     #returns predicted phrases for each tweet
     def predict_tweets(self, X):
         # For each tweet and sentiment pair, get predicted phrase
-        preds = [self.predict_tweet(x) for x in X.iterrows()]
+        preds = [self.predict_tweet(x) for x in X]
         return np.array(preds)
 
 
-    def predict_tweet(self, X):
+    def predict_tweet(self, X, sentiment):
         # Extract phrases from tweet
+        #check for neutral tweet and return whole tweetnegative
         phrases = self.extract_phrases(X)
-        return True
+        pos_bow = self._bag_words(np.array(phrases), "positive")
+        print("pos_bow:", pos_bow)
+        neg_bow = self._bag_words(np.array(phrases), "negative")
+        bow_pred = self._predict(pos_bow,neg_bow, sentiment)
+        #turn list of words back into string
+        #print("bow_pred:", bow_pred)
+        pred_inds = np.where(bow_pred == 1)
+        #print("pred_inds:", pred_inds)
+        prediction = self.master_vocab[sentiment][pred_inds] 
+        #print("pred word list:", prediction)
+        prediction = " ".join(prediction)
+        #print("prediction:", prediction)
+        return prediction
 
 
         # Turn each tweet into bag of words
@@ -135,34 +152,53 @@ class BinomialBayesClassifier():
 
         """
 
-
-
-    #INCOMPLETE
-    #takes in jagged np array of strings of examples
-    def predict(self, X):
-        self.test_bow = self._bag_words(X) #only saved for access for assignment output
-        preds = [self._predict(x) for x in self.test_bow]
-        return np.array(preds)
-
     #INCOMPLETE
     #predict a single example
-    def _predict(self, x):
-        if self._p_class_given_x(x, "pos") > self._p_class_given_x(x,"neg"):
-            return 1
+    #x is  bow phrases of a whole tweet
+    def _predict(self, pos_bow,neg_bow, sentiment):
+        probs = []
+        if sentiment == "positive":
+            for rowind in range(pos_bow.shape[0]):
+                pphrase = pos_bow[rowind]
+                nphrase = neg_bow[rowind]
+                pinds = np.where(pphrase == 1)
+                ninds = np.where(nphrase == 1)
+                posprob = np.sum(self.probability_vectors["positive"][pinds])
+                negprob =np.sum(self.probability_vectors["negative"][ninds])
+                probs.append(posprob-negprob)
+            #print("bow", pos_bow)
+            #print("probs", probs, len(probs))
+            predict_ind = np.argmax(probs)
+            #print("predict phrase at row:", predict_ind)
+            return pos_bow[predict_ind]
+
+        elif sentiment == "negative":
+            for rowind in range(neg_bow.shape[0]):
+                pphrase = pos_bow[rowind]
+                nphrase = neg_bow[rowind]
+                pinds = np.where(pphrase == 1)
+                ninds = np.where(nphrase == 1)
+                posprob = np.sum(self.probability_vectors["positive"][pinds])
+                negprob =np.sum(self.probability_vectors["negative"][ninds])
+                probs.append(negprob - posprob)
+            predict_ind = np.argmax(probs)
+            return neg_bow[predict_ind]
+       
         else:
-            return 0
+            print(str(sentiment)+"must be \"positive\" or \"negative\".")
+            return
 
     #takes in a jagged np array of strings of examples and a vocabulary
     #returns a binomal bag of words (num examples rows, num words in vocab cols)
-    def _bag_words(self, data):
+    def _bag_words(self, data, sentiment):
         num_examples = data.shape[0]
-        num_features = self.vocab.shape[0]
+        num_features = self.master_vocab[sentiment].shape[0]
         #make zero matrix with numex rows and numft columns
         matrix = np.zeros((num_examples, num_features), dtype="int8")
         for row_ind in range(num_examples): #for each review
             for row_word in data[row_ind]:
                 #match vocab indexes for each word in review, and set to 1
-                matrix[row_ind][np.where(row_word==self.vocab)]=1
+                matrix[row_ind][np.where(row_word==self.master_vocab[sentiment])]=1
         return matrix
 
     #function for training
@@ -198,6 +234,13 @@ classifier.fit(posTrainX, "positive")
 classifier.fit(negTrainX, "negative")
 #call fit on neutral data too.
 
+posPreds = classifier.predict_tweets(posTrainX, "positive")
+negPreds = classifier.predict_tweets(negTrainX, "negative")
+
+posscore = accuracy_score(posPreds, posTrainY)
+negscore = accuracy_score(negPreds, negTrainY)
+
+print("Total Score:", posscore+negscore)
 # Get phrases based off of tweets and associated sentiments
 #train_predictions = classifier.predict_tweets(train[['text', 'sentiment']])
 # test_predictions = classifier.predict(testX)
