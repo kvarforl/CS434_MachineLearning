@@ -241,6 +241,10 @@ posscore = accuracy_score(posPreds, posTrainY)
 negscore = accuracy_score(negPreds, negTrainY)
 
 print("Total Score:", posscore+negscore)
+
+print(posscore)
+#numpy.savetxt("submission.csv", submitValues, delimeter=",")
+
 # Get phrases based off of tweets and associated sentiments
 #train_predictions = classifier.predict_tweets(train[['text', 'sentiment']])
 # test_predictions = classifier.predict(testX)
