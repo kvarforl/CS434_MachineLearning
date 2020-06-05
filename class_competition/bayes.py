@@ -180,8 +180,9 @@ class BinomialBayesClassifier():
         denominator = np.sum(numerator)   #total number of words in class + |V|alpha
         vector = numerator / denominator
         #remove probabilities of stopwords
-        inds = np.where(self.master_vocab[sentiment] == stop_words)
-        vector[inds] = 0
+        for word in list(stop_words):
+            ind = np.where(self.master_vocab[sentiment] == word)
+            vector[ind] = 0
         return vector
 
 
