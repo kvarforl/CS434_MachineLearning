@@ -100,14 +100,6 @@ def clean_test_data(test):
     return (posTweets), (negTweets), (neutralTweets), posKeys, negKeys, neutralKeys
 
 
-
-
-
-
-    #all text fields are now a jagged array of cleaned examples
-    return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), (neutralTweets, neutralSelectedTxt), posVocab, negVocab, posKeys, negKeys, neutralKeys
-
-
 def _jaccard(str1, str2):
     a = set(str(str1).lower().split())
     b = set(str(str2).lower().split())
@@ -279,9 +271,3 @@ else:
     print("Total Score:", (posscore+negscore+neutralscore)/3)
     print("neg:", negscore, "pos:", posscore)
 
-    # Build file for submission (train needs to be replaced with test)
-    submissionMatrix = np.column_stack((posKeys, posPreds))
-    np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='%s')
-
-    print("Total Score:", (posscore+negscore+neutralscore)/3)
-    print("neg:", negscore, "pos:", posscore)
