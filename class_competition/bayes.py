@@ -9,15 +9,19 @@ from itertools import combinations
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("train", help="a .csv file of training data")
-    parser.add_argument("test", help="a .csv file of test data")
+    parser.add_argument("train", argument_default="train.csv", help="a .csv file of training data")
+    parser.add_argument("test", argument_default="test.csv", help="a .csv file of test data")
     return parser.parse_args()
 
 #returns data as pandas dataframes: use test.head() to easily inspect
 def load_data():
-    args = get_args()
-    train = pd.read_csv(args.train,sep="," )
-    test = pd.read_csv(args.test,sep=",")
+    #args = get_args()
+    #train = pd.read_csv("train.csv",sep="," )
+    #test = pd.read_csv("test.csv",sep=",")
+
+    # These next two lines are specifically for the kaggle notebook
+    train = pd.read_csv("../input/tweet-sentiment-extraction/train.csv",sep="," )
+    test = pd.read_csv("../input/tweet-sentiment-extraction/test.csv",sep=",")
     return train, test
 
 #function takes in a space delimited string and returns a cleaned list of words
