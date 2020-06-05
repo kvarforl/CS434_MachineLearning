@@ -6,7 +6,10 @@ import re
 from string import punctuation
 from itertools import combinations
 
+# Change to true if this is a kaggle notebook
 submission_for_kaggle = False
+
+stop_words = set(['if', 'with', 'through', 'm', 'off', 'y', 'have', 'an', 'up', 'll', 'has', 'own', 'will', 'me', "you'd", 'most', 'did', 'they', 'the', 'my', 'on', 'over', 's', 'while', 'who', "you're", 'down', 'out', 'some', 'where', 'myself', 'yourselves', 'you', 'him', 'her', 'am', 'of', 'ourselves', 'was', 'whom', 'does', 'do', 'just', 'had', 'or', 'their', 'about', 'more', 've', 'his', 'against', 'himself', 'because', 'each', 'any', 'are', 'hers', 'it', 'very', "you'll", 'he', 'i', 'what', 'that', 'above', 'ma', 'why', "that'll", 'once', 'them', 'having', 'when', 'this', 'there', 'a', 'before', 'below', 'but', 'now', 'o', 'is', 'to', 'yours', 'other', 'theirs', 'doing', 'under', 'were', 'we', 'which', 'itself', "you've", 'being', 'both', "it's", 'how', 'she', 'same', 'until', 'than', 'your', 'after', 'so', 'yourself', 'd', "should've", 'these', 'be', 'into', 'here', 'themselves', "she's", 'herself', 'as', 'should', 'by', 'too', 'then', 'all', 'its', 'such', 'during', 'for', 'in', 't', 'been', 'at', 'wasn', 'few', 're', 'those', 'and', 'ours', 'between', 'from', 'further', 'our', 'only'])
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -37,6 +40,8 @@ def _clean_text(review):
 
     #ignore case, separate on whitespace
     review = review.lower().split()
+    #ignore stopwords that are not negations
+    #review = [w for w in review if not w in stop_words]
     return np.array(review)
 
 #takes in pandas df of test and train data
@@ -129,7 +134,7 @@ class BinomialBayesClassifier():
 
     def fit(self, trainX, sentiment):
         train_bow = self._bag_words(trainX, sentiment)
-        self.probability_vectors[sentiment] = self._p_words_given_class(train_bow)
+        self.probability_vectors[sentiment] = self._p_words_given_class(train_bow, sentiment)
         self.probabilities[sentiment] = trainX.shape[0] / self.total
 
 
@@ -212,10 +217,14 @@ class BinomialBayesClassifier():
     #takes training features BOW (X), training labels (Y), and optional uniform dirichlet prior value (default 1)
     #also sets self.ppos and self.pneg
     #returns 2 row vectors of probability_vectors - [p(w0|y=0), p(w1|y=0)...], [p(w0|y=1), p(w1|y=1)...]
-    def _p_words_given_class(self, X, alpha=1):
+    def _p_words_given_class(self, X,sentiment, alpha=1):
         numerator = np.sum(X, axis=0) +alpha#vector of word counts in features matrix + alpha
         denominator = np.sum(numerator)   #total number of words in class + |V|alpha
-        return numerator / denominator
+        vector = numerator / denominator
+        #remove probabilities of stopwords
+        inds = np.where(self.master_vocab[sentiment] == stop_words)
+        vector[inds] = 0
+        return vector
 
 
     #INCOMPLETE/ we never use this... but i understand why. leaving it here in case it strike inspiration
