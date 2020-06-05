@@ -281,5 +281,5 @@ print(neutralSubmit)
 submissionMatrix = np.concatenate((posSubmit, negSubmit, neutralSubmit))
 
 print(submissionMatrix.shape)
-np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='%s')
+np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='"%s"')
 
