@@ -6,6 +6,9 @@ import re
 from string import punctuation
 from itertools import combinations
 
+# Change to true if this is a kaggle notebook
+submission_for_kaggle = False
+
 stop_words = set(['if', 'with', 'through', 'm', 'off', 'y', 'have', 'an', 'up', 'll', 'has', 'own', 'will', 'me', "you'd", 'most', 'did', 'they', 'the', 'my', 'on', 'over', 's', 'while', 'who', "you're", 'down', 'out', 'some', 'where', 'myself', 'yourselves', 'you', 'him', 'her', 'am', 'of', 'ourselves', 'was', 'whom', 'does', 'do', 'just', 'had', 'or', 'their', 'about', 'more', 've', 'his', 'against', 'himself', 'because', 'each', 'any', 'are', 'hers', 'it', 'very', "you'll", 'he', 'i', 'what', 'that', 'above', 'ma', 'why', "that'll", 'once', 'them', 'having', 'when', 'this', 'there', 'a', 'before', 'below', 'but', 'now', 'o', 'is', 'to', 'yours', 'other', 'theirs', 'doing', 'under', 'were', 'we', 'which', 'itself', "you've", 'being', 'both', "it's", 'how', 'she', 'same', 'until', 'than', 'your', 'after', 'so', 'yourself', 'd', "should've", 'these', 'be', 'into', 'here', 'themselves', "she's", 'herself', 'as', 'should', 'by', 'too', 'then', 'all', 'its', 'such', 'during', 'for', 'in', 't', 'been', 'at', 'wasn', 'few', 're', 'those', 'and', 'ours', 'between', 'from', 'further', 'our', 'only'])
 
 def get_args():
@@ -16,9 +19,15 @@ def get_args():
 
 #returns data as pandas dataframes: use test.head() to easily inspect
 def load_data():
-    args = get_args()
-    train = pd.read_csv(args.train,sep="," )
-    test = pd.read_csv(args.test,sep=",")
+    if (submission_for_kaggle):
+        # These next two lines are specifically for the kaggle notebook
+        train = pd.read_csv("../input/tweet-sentiment-extraction/train.csv",sep="," )
+        test = pd.read_csv("../input/tweet-sentiment-extraction/test.csv",sep=",")
+    else:
+        args = get_args()
+        train = pd.read_csv(args.train,sep="," )
+        test = pd.read_csv(args.test,sep=",")
+
     return train, test
 
 #function takes in a space delimited string and returns a cleaned list of words
@@ -65,6 +74,31 @@ def clean_train_data(train):
     neutralSelectedTxt = np.array(cS)
     #all text fields are now a jagged array of cleaned examples
     return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), (neutralTweets, neutralSelectedTxt), posVocab, negVocab, posKeys, negKeys, neutralKeys
+
+#takes in pandas df of test data
+def clean_test_data(test):
+    pos = test.loc[test["sentiment"] == "positive"].to_numpy() #create np matrix out of pos rows
+    neg = test.loc[test["sentiment"] == "negative"].to_numpy() #create np matrix out of neg rows
+    neutral = test.loc[test["sentiment"] == "neutral"].to_numpy()
+    posKeys, posTweets, _ = pos.T
+    negKeys, negTweets, _ = neg.T
+    neutralKeys, neutralTweets, _ = neutral.T
+
+    # posVocab = np.unique(_clean_text(list(posTweets)))
+    # negVocab = np.unique(_clean_text(list(negTweets)))
+
+    cT = [_clean_text(x) for x in posTweets]
+    posTweets = np.array(cT)
+
+    cT = [_clean_text(x) for x in negTweets]
+    negTweets = np.array(cT)
+
+    cT = [_clean_text(x) for x in neutralTweets]
+    neutralTweets = np.array(cT)
+
+    #all text fields are now a jagged array of cleaned examples
+    return (posTweets), (negTweets), (neutralTweets), posKeys, negKeys, neutralKeys
+
 
 def _jaccard(str1, str2):
     a = set(str(str1).lower().split())
@@ -114,7 +148,7 @@ class BinomialBayesClassifier():
         # Extract phrases from tweet
         #check for neutral tweet and return whole tweet
         if sentiment == "neutral":
-            return X
+            return " ".join(X)
         if not list(X):
             return ""
         phrases = self.extract_phrases(X)
@@ -194,7 +228,7 @@ class BinomialBayesClassifier():
     #     else:
     #         return np.sum(x*np.log(self.neg_wordprobs)) + np.log(self.pneg)
 
-
+print("Processing training data...")
 train, test = load_data()
 posTrain, negTrain, neutralTrain, posVocab, negVocab, posKeys, negKeys, neutralKeys = clean_train_data(train)
 posTrainX, posTrainY = posTrain
@@ -202,26 +236,39 @@ negTrainX, negTrainY = negTrain
 neutralTrainX, neutralTrainY = neutralTrain
 
 
+print("Training classifier...")
 classifier = BinomialBayesClassifier(posVocab, negVocab, len(train.index) )
 
 classifier.fit(posTrainX, "positive")
 classifier.fit(negTrainX, "negative")
 
-posPreds = classifier.predict_tweets(posTrainX, "positive")
-negPreds = classifier.predict_tweets(negTrainX, "negative")
-neutralPreds = classifier.predict_tweets(neutralTrainX, "neutral")
+if (submission_for_kaggle):
+    print("Processing testing data...")
+    posTest, negTest, neutralTest, posKeys, negKeys, neutralKeys = clean_test_data(test)
+    posTestX = posTest
+    negTestX = negTest
+    neutralTestX = neutralTest
 
-posscore = accuracy_score(posPreds, posTrainY)
-negscore = accuracy_score(negPreds, negTrainY)
-neutralscore = accuracy_score(neutralPreds, neutralTrainY)
+    print("Making predictions...")
+    posPreds = classifier.predict_tweets(posTestX, "positive")
+    negPreds = classifier.predict_tweets(negTestX, "negative")
+    neutralPreds = classifier.predict_tweets(neutralTestX, "neutral")
 
+    print("Building submission file...")
+    posSubmit = np.column_stack((posKeys, posPreds))
+    negSubmit = np.column_stack((negKeys, negPreds))
+    neutralSubmit = np.column_stack((neutralKeys, neutralPreds))
+    labels = np.array([["textID", "selected_text"]])
+    submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
+    np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='"%s"')
+else:
+    posPreds = classifier.predict_tweets(posTrainX, "positive")
+    negPreds = classifier.predict_tweets(negTrainX, "negative")
+    neutralPreds = classifier.predict_tweets(neutralTrainX, "neutral")
 
-print("Total Score:", (posscore+negscore+neutralscore)/3)
-print("neg:", negscore, "pos:", posscore)
+    posscore = accuracy_score(posPreds, posTrainY)
+    negscore = accuracy_score(negPreds, negTrainY)
+    neutralscore = accuracy_score(neutralPreds, neutralTrainY)
+    print("Total Score:", (posscore+negscore+neutralscore)/3)
+    print("neg:", negscore, "pos:", posscore)
 
-# Build file for submission (train needs to be replaced with test)
-submissionMatrix = np.column_stack((posKeys, posPreds))
-np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='%s')
-
-print("Total Score:", (posscore+negscore+neutralscore)/3)
-print("neg:", negscore, "pos:", posscore)
