@@ -273,12 +273,14 @@ print(posPreds)
 posSubmit = np.column_stack((posKeys, posPreds))
 negSubmit = np.column_stack((negKeys, negPreds))
 neutralSubmit = np.column_stack((neutralKeys, neutralPreds))
+labels = np.array([["textID", "selected_text"]])
 
+print(labels)
 print(posSubmit)
 print(negSubmit)
 print(neutralSubmit)
 
-submissionMatrix = np.concatenate((posSubmit, negSubmit, neutralSubmit))
+submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
 
 print(submissionMatrix.shape)
 np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='"%s"')
