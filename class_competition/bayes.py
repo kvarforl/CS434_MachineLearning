@@ -63,6 +63,39 @@ def clean_train_data(train):
     #all text fields are now a jagged array of cleaned examples
     return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), (neutralTweets, neutralSelectedTxt), posVocab, negVocab, posKeys, negKeys, neutralKeys
 
+#takes in pandas df of test data
+def clean_test_data(test):
+    pos = test.loc[test["sentiment"] == "positive"].to_numpy() #create np matrix out of pos rows
+    neg = test.loc[test["sentiment"] == "negative"].to_numpy() #create np matrix out of neg rows
+    neutral = test.loc[test["sentiment"] == "neutral"].to_numpy()
+    posKeys, posTweets, _ = pos.T
+    negKeys, negTweets, _ = neg.T
+    neutralKeys, neutralTweets, _ = neutral.T
+
+    # posVocab = np.unique(_clean_text(list(posTweets)))
+    # negVocab = np.unique(_clean_text(list(negTweets)))
+
+    cT = [_clean_text(x) for x in posTweets]
+    posTweets = np.array(cT)
+
+    cT = [_clean_text(x) for x in negTweets]
+    negTweets = np.array(cT)
+
+    cT = [_clean_text(x) for x in neutralTweets]
+    neutralTweets = np.array(cT)
+
+    #all text fields are now a jagged array of cleaned examples
+    return (posTweets), (negTweets), (neutralTweets), posKeys, negKeys, neutralKeys
+
+
+
+
+
+
+    #all text fields are now a jagged array of cleaned examples
+    return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), (neutralTweets, neutralSelectedTxt), posVocab, negVocab, posKeys, negKeys, neutralKeys
+
+
 def _jaccard(str1, str2):
     a = set(str(str1).lower().split())
     b = set(str(str2).lower().split())
@@ -111,7 +144,7 @@ class BinomialBayesClassifier():
         # Extract phrases from tweet
         #check for neutral tweet and return whole tweet
         if sentiment == "neutral":
-            return X
+            return " ".join(X)
         if not list(X):
             return ""
         phrases = self.extract_phrases(X)
@@ -199,6 +232,22 @@ classifier = BinomialBayesClassifier(posVocab, negVocab, len(train.index) )
 classifier.fit(posTrainX, "positive")
 classifier.fit(negTrainX, "negative")
 
+
+# Process testing data
+posTest, negTest, neutralTest, posKeys, negKeys, neutralKeys = clean_test_data(test)
+posTestX = posTest
+negTestX = negTest
+neutralTestX = neutralTest
+
+
+
+posPreds = classifier.predict_tweets(posTestX, "positive")
+negPreds = classifier.predict_tweets(negTestX, "negative")
+neutralPreds = classifier.predict_tweets(neutralTestX, "neutral")
+
+
+
+"""
 posPreds = classifier.predict_tweets(posTrainX, "positive")
 negPreds = classifier.predict_tweets(negTrainX, "negative")
 neutralPreds = classifier.predict_tweets(neutralTrainX, "neutral")
@@ -207,13 +256,19 @@ posscore = accuracy_score(posPreds, posTrainY)
 negscore = accuracy_score(negPreds, negTrainY)
 neutralscore = accuracy_score(neutralPreds, neutralTrainY)
 
-
-print("Total Score:", (posscore+negscore+neutralscore)/3)
-print("neg:", negscore, "pos:", posscore)
+"""
 
 # Build file for submission (train needs to be replaced with test)
-submissionMatrix = np.column_stack((posKeys, posPreds))
-np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='%s')
+print(posKeys)
+print(posPreds)
+posSubmit = np.column_stack((posKeys, posPreds))
+negSubmit = np.column_stack((negKeys, negPreds))
+neutralSubmit = np.column_stack((neutralKeys, neutralPreds))
 
-print("Total Score:", (posscore+negscore+neutralscore)/3)
-print("neg:", negscore, "pos:", posscore)
+print(posSubmit)
+print(negSubmit)
+print(neutralSubmit)
+
+submissionMatrix = np.concatenate((posSubmit, negSubmit, neutralSubmit))
+
+np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='%s')
