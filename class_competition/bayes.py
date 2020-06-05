@@ -37,9 +37,9 @@ def clean_train_data(train):
     pos = train.loc[train["sentiment"] == "positive"].to_numpy() #create np matrix out of pos rows
     neg = train.loc[train["sentiment"] == "negative"].to_numpy() #create np matrix out of neg rows
     neutral = train.loc[train["sentiment"] == "neutral"].to_numpy()
-    _, posTweets, posSelectedTxt, _ = pos.T
-    _, negTweets, negSelectedTxt, _ = neg.T
-    _, neutralTweets, neutralSelectedTxt, _ = neutral.T
+    posKeys, posTweets, posSelectedTxt, _ = pos.T
+    negKeys, negTweets, negSelectedTxt, _ = neg.T
+    neutralKeys, neutralTweets, neutralSelectedTxt, _ = neutral.T
 
     posVocab = np.unique(_clean_text(list(posSelectedTxt)))
     negVocab = np.unique(_clean_text(list(negSelectedTxt)))
@@ -61,7 +61,7 @@ def clean_train_data(train):
     neutralTweets = np.array(cT)
     neutralSelectedTxt = np.array(cS)
     #all text fields are now a jagged array of cleaned examples
-    return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), (neutralTweets, neutralSelectedTxt), posVocab, negVocab
+    return (posTweets, posSelectedTxt), (negTweets, negSelectedTxt), (neutralTweets, neutralSelectedTxt), posVocab, negVocab, posKeys, negKeys, neutralKeys
 
 def _jaccard(str1, str2):
     a = set(str(str1).lower().split())
@@ -230,7 +230,7 @@ class BinomialBayesClassifier():
 
 
 train, test = load_data()
-posTrain, negTrain, neutralTrain, posVocab, negVocab = clean_train_data(train)
+posTrain, negTrain, neutralTrain, posVocab, negVocab, posKeys, negKeys, neutralKeys = clean_train_data(train)
 posTrainX, posTrainY = posTrain
 negTrainX, negTrainY = negTrain
 neutralTrainX, neutralTrainY = neutralTrain
@@ -251,11 +251,19 @@ posscore = accuracy_score(posPreds, posTrainY)
 negscore = accuracy_score(negPreds, negTrainY)
 neutralscore = accuracy_score(neutralPreds, neutralTrainY)
 
-#print(posscore)
-#numpy.savetxt("submission.csv", submitValues, delimeter=",")
+print(posTrain)
+print(posPreds)
 
 print("Total Score:", (posscore+negscore+neutralscore)/3)
 print("neg:", negscore, "pos:", posscore)
+
+
+# Build file for submission (train needs to be replaced with test)
+submissionMatrix = np.column_stack((posKeys, posPreds))
+print(submissionMatrix)
+
+np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='%s')
+
 # Get phrases based off of tweets and associated sentiments
 #train_predictions = classifier.predict_tweets(train[['text', 'sentiment']])
 # test_predictions = classifier.predict(testX)
