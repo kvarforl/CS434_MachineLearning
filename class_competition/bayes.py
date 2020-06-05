@@ -6,6 +6,7 @@ import re
 from string import punctuation
 from itertools import combinations
 
+submission_for_kaggle = False
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -15,15 +16,15 @@ def get_args():
 
 #returns data as pandas dataframes: use test.head() to easily inspect
 def load_data():
-    args = get_args()
-    train = pd.read_csv(args.train,sep="," )
-    test = pd.read_csv(args.test,sep=",")
-    #train = pd.read_csv("train.csv",sep="," )
-    #test = pd.read_csv("test.csv",sep=",")
+    if (submission_for_kaggle):
+        # These next two lines are specifically for the kaggle notebook
+        train = pd.read_csv("../input/tweet-sentiment-extraction/train.csv",sep="," )
+        test = pd.read_csv("../input/tweet-sentiment-extraction/test.csv",sep=",")
+    else:
+        args = get_args()
+        train = pd.read_csv(args.train,sep="," )
+        test = pd.read_csv(args.test,sep=",")
 
-    # These next two lines are specifically for the kaggle notebook
-    #train = pd.read_csv("../input/tweet-sentiment-extraction/train.csv",sep="," )
-    #test = pd.read_csv("../input/tweet-sentiment-extraction/test.csv",sep=",")
     return train, test
 
 #function takes in a space delimited string and returns a cleaned list of words
@@ -239,49 +240,39 @@ classifier = BinomialBayesClassifier(posVocab, negVocab, len(train.index) )
 classifier.fit(posTrainX, "positive")
 classifier.fit(negTrainX, "negative")
 
-print("Processing testing data...")
-# Process testing data
-posTest, negTest, neutralTest, posKeys, negKeys, neutralKeys = clean_test_data(test)
-posTestX = posTest
-negTestX = negTest
-neutralTestX = neutralTest
+if (submission_for_kaggle):
+    print("Processing testing data...")
+    posTest, negTest, neutralTest, posKeys, negKeys, neutralKeys = clean_test_data(test)
+    posTestX = posTest
+    negTestX = negTest
+    neutralTestX = neutralTest
 
+    print("Making predictions...")
+    posPreds = classifier.predict_tweets(posTestX, "positive")
+    negPreds = classifier.predict_tweets(negTestX, "negative")
+    neutralPreds = classifier.predict_tweets(neutralTestX, "neutral")
 
+    print("Building submission file...")
+    posSubmit = np.column_stack((posKeys, posPreds))
+    negSubmit = np.column_stack((negKeys, negPreds))
+    neutralSubmit = np.column_stack((neutralKeys, neutralPreds))
+    labels = np.array([["textID", "selected_text"]])
+    submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
+    np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='"%s"')
+else:
+    posPreds = classifier.predict_tweets(posTrainX, "positive")
+    negPreds = classifier.predict_tweets(negTrainX, "negative")
+    neutralPreds = classifier.predict_tweets(neutralTrainX, "neutral")
 
-print("Making predictions...")
-posPreds = classifier.predict_tweets(posTestX, "positive")
-negPreds = classifier.predict_tweets(negTestX, "negative")
-neutralPreds = classifier.predict_tweets(neutralTestX, "neutral")
+    posscore = accuracy_score(posPreds, posTrainY)
+    negscore = accuracy_score(negPreds, negTrainY)
+    neutralscore = accuracy_score(neutralPreds, neutralTrainY)
+    print("Total Score:", (posscore+negscore+neutralscore)/3)
+    print("neg:", negscore, "pos:", posscore)
 
+    # Build file for submission (train needs to be replaced with test)
+    submissionMatrix = np.column_stack((posKeys, posPreds))
+    np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='%s')
 
-
-"""
-posPreds = classifier.predict_tweets(posTrainX, "positive")
-negPreds = classifier.predict_tweets(negTrainX, "negative")
-neutralPreds = classifier.predict_tweets(neutralTrainX, "neutral")
-
-posscore = accuracy_score(posPreds, posTrainY)
-negscore = accuracy_score(negPreds, negTrainY)
-neutralscore = accuracy_score(neutralPreds, neutralTrainY)
-
-"""
-
-print("Building submission file...")
-# Build file for submission (train needs to be replaced with test)
-print(posKeys)
-print(posPreds)
-posSubmit = np.column_stack((posKeys, posPreds))
-negSubmit = np.column_stack((negKeys, negPreds))
-neutralSubmit = np.column_stack((neutralKeys, neutralPreds))
-labels = np.array([["textID", "selected_text"]])
-
-print(labels)
-print(posSubmit)
-print(negSubmit)
-print(neutralSubmit)
-
-submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
-
-print(submissionMatrix.shape)
-np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='"%s"')
-
+    print("Total Score:", (posscore+negscore+neutralscore)/3)
+    print("neg:", negscore, "pos:", posscore)
