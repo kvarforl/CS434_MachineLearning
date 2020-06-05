@@ -9,19 +9,21 @@ from itertools import combinations
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("train", argument_default="train.csv", help="a .csv file of training data")
-    parser.add_argument("test", argument_default="test.csv", help="a .csv file of test data")
+    parser.add_argument("train", help="a .csv file of training data")
+    parser.add_argument("test", help="a .csv file of test data")
     return parser.parse_args()
 
 #returns data as pandas dataframes: use test.head() to easily inspect
 def load_data():
-    #args = get_args()
+    args = get_args()
+    train = pd.read_csv(args.train,sep="," )
+    test = pd.read_csv(args.test,sep=",")
     #train = pd.read_csv("train.csv",sep="," )
     #test = pd.read_csv("test.csv",sep=",")
 
     # These next two lines are specifically for the kaggle notebook
-    train = pd.read_csv("../input/tweet-sentiment-extraction/train.csv",sep="," )
-    test = pd.read_csv("../input/tweet-sentiment-extraction/test.csv",sep=",")
+    #train = pd.read_csv("../input/tweet-sentiment-extraction/train.csv",sep="," )
+    #test = pd.read_csv("../input/tweet-sentiment-extraction/test.csv",sep=",")
     return train, test
 
 #function takes in a space delimited string and returns a cleaned list of words
@@ -223,7 +225,7 @@ class BinomialBayesClassifier():
     #     else:
     #         return np.sum(x*np.log(self.neg_wordprobs)) + np.log(self.pneg)
 
-
+print("Processing training data...")
 train, test = load_data()
 posTrain, negTrain, neutralTrain, posVocab, negVocab, posKeys, negKeys, neutralKeys = clean_train_data(train)
 posTrainX, posTrainY = posTrain
@@ -231,12 +233,13 @@ negTrainX, negTrainY = negTrain
 neutralTrainX, neutralTrainY = neutralTrain
 
 
+print("Training classifier...")
 classifier = BinomialBayesClassifier(posVocab, negVocab, len(train.index) )
 
 classifier.fit(posTrainX, "positive")
 classifier.fit(negTrainX, "negative")
 
-
+print("Processing testing data...")
 # Process testing data
 posTest, negTest, neutralTest, posKeys, negKeys, neutralKeys = clean_test_data(test)
 posTestX = posTest
@@ -245,6 +248,7 @@ neutralTestX = neutralTest
 
 
 
+print("Making predictions...")
 posPreds = classifier.predict_tweets(posTestX, "positive")
 negPreds = classifier.predict_tweets(negTestX, "negative")
 neutralPreds = classifier.predict_tweets(neutralTestX, "neutral")
@@ -262,6 +266,7 @@ neutralscore = accuracy_score(neutralPreds, neutralTrainY)
 
 """
 
+print("Building submission file...")
 # Build file for submission (train needs to be replaced with test)
 print(posKeys)
 print(posPreds)
@@ -275,4 +280,6 @@ print(neutralSubmit)
 
 submissionMatrix = np.concatenate((posSubmit, negSubmit, neutralSubmit))
 
+print(submissionMatrix.shape)
 np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='%s')
+
