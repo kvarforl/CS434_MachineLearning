@@ -1,5 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer
 from itertools import combinations
+from copy import *
 import re
 import argparse
 import pandas as pd
@@ -46,7 +47,7 @@ class BinomialBayesClassifier():
     def __init__(self):
         
         self.vectorizer = CountVectorizer(min_df=1, 
-                            ngram_range=(2,2), #consider sentiments in pairs of words. can change to any range 
+                            ngram_range=(1,2), #consider sentiments in pairs of words. can change to any range 
                             preprocessor=_clean_text,
                             stop_words= stop_words)
    
@@ -60,19 +61,19 @@ class BinomialBayesClassifier():
 
     #call on column of selected text in pandas df
     def fit(self, trainX, sentiment):
-        self.cvs[sentiment] = self.vectorizer.fit(trainX)
+        self.cvs[sentiment] = deepcopy(self.vectorizer.fit(trainX))
         train_bow = self.cvs[sentiment].transform(trainX) #creates bow representation (multinomial)
         self.inverted_vocabularies[sentiment] = dict([[v,k] for k,v in self.cvs[sentiment].vocabulary_.items()])
         self.probability_vectors[sentiment] = self._p_words_given_class(train_bow, sentiment)
 
     #TODO: this needs to be adjusted to be applied to the BOW representation of a tweet if we want to use ngrams (which I think we should :)
-    def extract_phrases(self, tweet, sentiment):
+    def extract_phrases(self, tweet ):
         subphrases = []
-        words = [w for w in tweet if w in self.inverted_vocabularies[sentiment]]
+        #words = [w for w in tweet if w in self.inverted_vocabularies[sentiment]]
+        words = tweet.split()
         for strt, end in combinations(range(len(words) + 1), 2):
-            subphrases.append(words[strt:end])
-
-        return pd.DataFrame(subphrases, columns=["phrases"])
+            subphrases.append(" ".join(words[strt:end]))
+        return np.array(subphrases)
 
     def predict_tweets(self, X, sentiment):
         # For each tweet and sentiment pair, get predicted phrase
@@ -84,17 +85,21 @@ class BinomialBayesClassifier():
     def predict_tweet(self, X, sentiment):
         # Extract phrases from tweet
         #check for neutral tweet and return whole tweet
-        print("tweet in predict_tweet",X)
+        #print("tweet in predict_tweet:",X)
         if sentiment == "neutral":
             return " ".join(X)
         if not list(X):
             return ""
-        phrases = self.extract_phrases(X, sentiment)
-        print("phrases:", phrases)
-        pos_bow = self.cvs["positive"].transform(phrases).toarray()
+        phrases = self.extract_phrases(X)
+        #print("phrases:", phrases)
+        #apply to each row of phrases!
+        pos_bow = np.apply_along_axis(self.cvs["positive"].transform, axis=1, arr=phrases())
+        pos_bow = np.asarray([x.toarray() for x in bow])
         neg_bow = self.cvs["negative"].transform(phrases).toarray()
+        print("pos_bow:", pos_bow, "neg_bow:", neg_bow)
         bow_pred = self._predict(pos_bow,neg_bow, sentiment)
-        prediction = [self.inverted_vocabularies[sentiment][i] for i in bow_pred] #gen list of words
+        #print(bow_pred)
+        prediction = [self.inverted_vocabularies[sentiment][i] for i in bow_pred if bow_pred[i] != 0] #gen list of words
         prediction = " ".join(prediction)#make into string
         return prediction
 
@@ -110,7 +115,7 @@ class BinomialBayesClassifier():
                 posprob = np.sum(self.probability_vectors["positive"][pinds])
                 negprob =np.sum(self.probability_vectors["negative"][ninds])
                 probs.append(posprob-negprob)
-            predict_ind = np.argmax(probs)
+            predict_ind = np.argmax(probs)0
             return pos_bow[predict_ind]
 
         elif sentiment == "negative":
