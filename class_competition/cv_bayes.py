@@ -98,10 +98,11 @@ class BinomialBayesClassifier():
         neg_bow = np.apply_along_axis(self.cvs["negative"].transform, axis=1, arr=phrases)
         neg_bow = np.asarray([x.toarray() for x in neg_bow])
         #print("pos_bow:", pos_bow, "neg_bow:", neg_bow)
-        bow_pred = self._predict(pos_bow,neg_bow, sentiment)
-        print(bow_pred)
-        quit()
+        bow_pred = self._predict(pos_bow,neg_bow, sentiment)[0]
+        #print(bow_pred)
         prediction = [self.inverted_vocabularies[sentiment][i] for i in range(len(bow_pred)) if bow_pred[i] != 0] #gen list of words
+        prediction = " ".join(prediction)#make into string
+        prediction = set(prediction.split())
         prediction = " ".join(prediction)#make into string
         return prediction
 
