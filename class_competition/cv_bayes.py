@@ -41,6 +41,18 @@ def _clean_text(review):
     #review = [w for w in review if not w in stop_words]
     return review
 
+def _jaccard(str1, str2):
+    a = set(str(str1).lower().split())
+    b = set(str(str2).lower().split())
+    c = a.intersection(b)
+    return float(len(c)) / (len(a) + len(b) - len(c))
+
+#expects 1D np arrays of equal dimensions:
+def accuracy_score(predicted, actual):
+    num_examples = actual.shape[0]
+    jaccards = [_jaccard(predicted[i],actual[i]) for i in range(num_examples)]
+    score = np.sum(jaccards) / num_examples
+    return score
 
 class BinomialBayesClassifier():
 
@@ -161,13 +173,38 @@ alltrain, alltest = load_data()
 #these are still pandas dataframes (they work most nicely with countvectorizer
 posTrain = alltrain[alltrain["sentiment"] =="positive"]
 negTrain = alltrain[alltrain["sentiment"] =="negative"]
-test = alltest[alltest["sentiment"] != "neutral"]
+neutralTrain = alltrain[alltrain["sentiment"] =="neutral"]
+
+posTest = alltest[alltest["sentiment"] =="positive"]
+negTest = alltest[alltest["sentiment"] =="negative"]
+neutralTest = alltest[alltest["sentiment"] =="neutral"]
 
 classifier = BinomialBayesClassifier()
 classifier.fit(posTrain["selected_text"],"positive")
 classifier.fit(negTrain["selected_text"], "negative")
 
-posPreds = classifier.predict_tweets(posTrain["text"], "positive")
-print(posPreds)
+if submission_for_kaggle:
+    posPreds = classifier.predict_tweets(posTest["text"], "positive")
+    negPreds = classifier.predict_tweets(negTest["text"], "negative")
+    neutralPreds = classifier.predict_tweets(neutralTest["text"], "neutral")
+    
+    print("Building submission file...")
+    posSubmit = np.column_stack((posTest["textID"].to_numpy(), posPreds))
+    negSubmit = np.column_stack((negTest["textID"].to_numpy(), negPreds))
+    neutralSubmit = np.column_stack((neutralTest["textID"].to_numpy(), neutralPreds))
+    labels = np.array([["textID", "selected_text"]])
+    submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
+    np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='"%s"')
+
+else:
+    posPreds = classifier.predict_tweets(posTrain["text"], "positive")
+    negPreds = classifier.predict_tweets(negTrain["text"], "negative")
+    neutralPreds = classifier.predict_tweets(neutralTrain["text"], "neutral")
+
+    posscore = accuracy_score(posPreds, posTrain["selected_text"].to_numpy())
+    negscore = accuracy_score(negPreds, negTrain["selected_text"].to_numpy())
+    neutralscore = accuracy_score(neutralPreds, neutralTrain["selected_text"].to_numpy())
+    print("Total Score:", (posscore+negscore+neutralscore)/3)
+    print("neg:", negscore, "pos:", posscore, "neut:", neutralscore)
 
 
