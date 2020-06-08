@@ -201,10 +201,19 @@ else:
     negPreds = classifier.predict_tweets(negTrain["text"], "negative")
     neutralPreds = classifier.predict_tweets(neutralTrain["text"], "neutral")
 
-    posscore = accuracy_score(posPreds, posTrain["selected_text"].to_numpy())
-    negscore = accuracy_score(negPreds, negTrain["selected_text"].to_numpy())
-    neutralscore = accuracy_score(neutralPreds, neutralTrain["selected_text"].to_numpy())
-    print("Total Score:", (posscore+negscore+neutralscore)/3)
-    print("neg:", negscore, "pos:", posscore, "neut:", neutralscore)
+    print("building ouput file...")
+    posSubmit = np.column_stack((posTrain["text"].to_numpy(), posPreds, posTrain["selected_text"].to_numpy()))
+    negSubmit = np.column_stack((negTrain["text"].to_numpy(), negPreds, negTrain["selected_text"].to_numpy()))
+    neutralSubmit = np.column_stack((neutralTrain["textID"].to_numpy(), neutralPreds, neutralTrain["selected_text"].to_numpy()))
+    labels = np.array([["textID", "predicted", "actual"]])
+    submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
+    np.savetxt("cv_bayes_train.csv", submissionMatrix, delimiter=",", fmt='"%s"')
+    
+    
+    #posscore = accuracy_score(posPreds, posTrain["selected_text"].to_numpy())
+    #negscore = accuracy_score(negPreds, negTrain["selected_text"].to_numpy())
+    #neutralscore = accuracy_score(neutralPreds, neutralTrain["selected_text"].to_numpy())
+    #print("Total Score:", (posscore+negscore+neutralscore)/3)
+    #print("neg:", negscore, "pos:", posscore, "neut:", neutralscore)
 
 

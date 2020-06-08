@@ -266,9 +266,20 @@ else:
     negPreds = classifier.predict_tweets(negTrainX, "negative")
     neutralPreds = classifier.predict_tweets(neutralTrainX, "neutral")
 
-    posscore = accuracy_score(posPreds, posTrainY)
-    negscore = accuracy_score(negPreds, negTrainY)
-    neutralscore = accuracy_score(neutralPreds, neutralTrainY)
-    print("Total Score:", (posscore+negscore+neutralscore)/3)
-    print("neg:", negscore, "pos:", posscore)
+    print("building ouput file...")
+    posSubmit = np.column_stack((posTrainX, posPreds, posTrainY))
+    negSubmit = np.column_stack((negTrainX, negPreds, negTrainY))
+    neutralSubmit = np.column_stack((neutralTrainX, neutralPreds, neutralTrainY))
+    labels = np.array([["textID", "predicted", "actual"]])
+    submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
+    np.savetxt("bayes_train.csv", submissionMatrix, delimiter=",", fmt='"%s"')
+    
+    
+
+
+    #posscore = accuracy_score(posPreds, posTrainY)
+    #negscore = accuracy_score(negPreds, negTrainY)
+    #neutralscore = accuracy_score(neutralPreds, neutralTrainY)
+    #print("Total Score:", (posscore+negscore+neutralscore)/3)
+    #print("neg:", negscore, "pos:", posscore)
 
