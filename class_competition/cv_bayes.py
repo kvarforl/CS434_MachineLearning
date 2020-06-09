@@ -78,7 +78,7 @@ class BinomialBayesClassifier():
         self.inverted_vocabularies[sentiment] = dict([[v,k] for k,v in self.cvs[sentiment].vocabulary_.items()])
         self.probability_vectors[sentiment] = self._p_words_given_class(train_bow, sentiment)
 
-    #TODO: this needs to be adjusted to be applied to the BOW representation of a tweet if we want to use ngrams (which I think we should :)
+     #TODO: this needs to be adjusted to be applied to the BOW representation of a tweet if we want to use ngrams (which I think we should :)
     def extract_phrases(self, tweet ):
         subphrases = []
         #words = [w for w in tweet if w in self.inverted_vocabularies[sentiment]]
@@ -168,8 +168,8 @@ class BinomialBayesClassifier():
             for rowind in range(neg_bow.shape[0]):
                 pphrase = pos_bow[rowind]
                 nphrase = neg_bow[rowind]
-                pinds = np.where(pphrase != 1)
-                ninds = np.where(nphrase != 1)
+                pinds = np.where(pphrase != 0)
+                ninds = np.where(nphrase != 0)
                 posprob = np.sum(self.probability_vectors["positive"][pinds])
                 negprob =np.sum(self.probability_vectors["negative"][ninds])
                 probs.append(negprob - posprob)
