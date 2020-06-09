@@ -61,7 +61,10 @@ class BinomialBayesClassifier():
         self.vectorizer = CountVectorizer(min_df=1,
                             ngram_range=(1,2), #consider sentiments in pairs of words. can change to any range
                             preprocessor=_clean_text,
-                            stop_words= stop_words)
+                            #token_pattern=r"(?u)\b\w\w+\b|!|\?|\"|\*|\.|,|:|;",
+                            token_pattern=r'[^\s]+',
+                            stop_words= stop_words
+                            )
 
         #vocabulary dictionary's are accessible via self.cvs[sentiment].vocabulary_
         #can be used to access index of word {word: index}
@@ -88,7 +91,8 @@ class BinomialBayesClassifier():
         return pd.DataFrame(subphrases, columns=["phrases"]).to_numpy()
 
     def addRegexSyntax(self, word):
-        return "(" + re.sub("[\W_]", " ", word) + ")"
+        #return "(" + re.sub("[\W_]", " ", word) + ")"
+        return "(" + re.escape(word) + ")"
 
     # Takes a tweet and a list of words,
     # finds the full text substring that the word list was made from
@@ -99,7 +103,8 @@ class BinomialBayesClassifier():
         anyContainedWord = "(" + "|".join(list(map(self.addRegexSyntax, words))) + ")"
         regexLine = "(" + anyContainedWord + "(.*)){" + str(len(words) - 1) + "}" + anyContainedWord
 
-        match = re.search(regexLine, re.sub("[\W_]", " ", tweet.lower()))
+        #match = re.search(regexLine, re.sub("[\W_]", " ", tweet.lower()))
+        match = re.search(regexLine, tweet.lower())
 
         if (match == None):
             print("ERROR: No possible substring found when reconstructing tweet line. This should not happen, something is wrong...")
@@ -250,10 +255,10 @@ else:
 
 
 
-    #posscore = accuracy_score(posPreds, posTrain["selected_text"].to_numpy())
-    #negscore = accuracy_score(negPreds, negTrain["selected_text"].to_numpy())
-    #neutralscore = accuracy_score(neutralPreds, neutralTrain["selected_text"].to_numpy())
-    #print("Total Score:", (posscore+negscore+neutralscore)/3)
-    #print("neg:", negscore, "pos:", posscore, "neut:", neutralscore)
+    posscore = accuracy_score(posPreds, posTrain["selected_text"].to_numpy())
+    negscore = accuracy_score(negPreds, negTrain["selected_text"].to_numpy())
+    neutralscore = accuracy_score(neutralPreds, neutralTrain["selected_text"].to_numpy())
+    print("Total Score:", (posscore+negscore+neutralscore)/3)
+    print("neg:", negscore, "pos:", posscore, "neut:", neutralscore)
 
 
