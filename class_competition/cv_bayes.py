@@ -187,7 +187,7 @@ if submission_for_kaggle:
     posPreds = classifier.predict_tweets(posTest["text"], "positive")
     negPreds = classifier.predict_tweets(negTest["text"], "negative")
     neutralPreds = classifier.predict_tweets(neutralTest["text"], "neutral")
-    
+
     print("Building submission file...")
     posSubmit = np.column_stack((posTest["textID"].to_numpy(), posPreds))
     negSubmit = np.column_stack((negTest["textID"].to_numpy(), negPreds))
@@ -202,14 +202,23 @@ else:
     neutralPreds = classifier.predict_tweets(neutralTrain["text"], "neutral")
 
     print("building ouput file...")
+    """
     posSubmit = np.column_stack((posTrain["text"].to_numpy(), posPreds, posTrain["selected_text"].to_numpy()))
     negSubmit = np.column_stack((negTrain["text"].to_numpy(), negPreds, negTrain["selected_text"].to_numpy()))
     neutralSubmit = np.column_stack((neutralTrain["textID"].to_numpy(), neutralPreds, neutralTrain["selected_text"].to_numpy()))
     labels = np.array([["textID", "predicted", "actual"]])
     submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
     np.savetxt("cv_bayes_train.csv", submissionMatrix, delimiter=",", fmt='"%s"')
-    
-    
+    """
+    posSubmit = np.column_stack((posTrain["textID"].to_numpy(), posPreds, posTrain["selected_text"].to_numpy(), posTrain["sentiment"].to_numpy()))
+    negSubmit = np.column_stack((negTrain["textID"].to_numpy(), negPreds, negTrain["selected_text"].to_numpy(), negTrain["sentiment"].to_numpy()))
+    neutralSubmit = np.column_stack((neutralTrain["textID"].to_numpy(), neutralPreds, neutralTrain["selected_text"].to_numpy(), neutralTrain["sentiment"].to_numpy()))
+    labels = np.array([["textID", "selected_text", "actual_text", "sentiment"]])
+    submissionMatrix = np.concatenate((labels, posSubmit, negSubmit, neutralSubmit))
+    np.savetxt("submission.csv", submissionMatrix, delimiter=",", fmt='"%s"')
+
+
+
     #posscore = accuracy_score(posPreds, posTrain["selected_text"].to_numpy())
     #negscore = accuracy_score(negPreds, negTrain["selected_text"].to_numpy())
     #neutralscore = accuracy_score(neutralPreds, neutralTrain["selected_text"].to_numpy())
