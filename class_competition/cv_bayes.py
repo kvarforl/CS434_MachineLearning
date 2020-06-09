@@ -99,7 +99,7 @@ class BinomialBayesClassifier():
         #check for neutral tweet and return whole tweet
         #print("tweet in predict_tweet:",X)
         if sentiment == "neutral":
-            return " ".join(X)
+            return X
         if not list(X):
             return ""
         phrases = self.extract_phrases(X)
