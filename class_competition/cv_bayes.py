@@ -61,7 +61,10 @@ class BinomialBayesClassifier():
         self.vectorizer = CountVectorizer(min_df=1,
                             ngram_range=(1,2), #consider sentiments in pairs of words. can change to any range
                             preprocessor=_clean_text,
-                            stop_words= stop_words)
+                            #token_pattern=r"(?u)\b\w\w+\b|!|\?|\"|\*|\.|,|:|;",
+                            token_pattern=r'[^\s]+',
+                            stop_words= stop_words
+                            )
 
         #vocabulary dictionary's are accessible via self.cvs[sentiment].vocabulary_
         #can be used to access index of word {word: index}
@@ -86,6 +89,33 @@ class BinomialBayesClassifier():
         for strt, end in combinations(range(len(words) + 1), 2):
             subphrases.append(" ".join(words[strt:end]))
         return pd.DataFrame(subphrases, columns=["phrases"]).to_numpy()
+
+    def addRegexSyntax(self, word):
+        #return "(" + re.sub("[\W_]", " ", word) + ")"
+        return "(" + re.escape(word) + ")"
+
+    # Takes a tweet and a list of words,
+    # finds the full text substring that the word list was made from
+    def reconstructText(self, tweet, words):
+        if not words or tweet == "":
+            return ""
+
+        anyContainedWord = "(" + "|".join(list(map(self.addRegexSyntax, words))) + ")"
+        regexLine = "(" + anyContainedWord + "(.*)){" + str(len(words) - 1) + "}" + anyContainedWord
+
+        #match = re.search(regexLine, re.sub("[\W_]", " ", tweet.lower()))
+        match = re.search(regexLine, tweet.lower())
+
+        if (match == None):
+            print("ERROR: No possible substring found when reconstructing tweet line. This should not happen, something is wrong...")
+            print("Tweet Text: ")
+            print(tweet)
+            print("searching for words: ", words)
+            quit()
+
+        extractedText = tweet[match.start():match.end()]
+        return extractedText
+
 
     def predict_tweets(self, X, sentiment):
         # For each tweet and sentiment pair, get predicted phrase
@@ -115,8 +145,14 @@ class BinomialBayesClassifier():
         prediction = [self.inverted_vocabularies[sentiment][i] for i in range(len(bow_pred)) if bow_pred[i] != 0] #gen list of words
         prediction = " ".join(prediction)#make into string
         prediction = set(prediction.split())
-        prediction = " ".join(prediction)#make into string
-        return prediction
+
+
+        # Aiden's regex text extraction experiment :)
+        return self.reconstructText(X, list(prediction))
+
+
+        #prediction = " ".join(prediction)#make into string
+        #return prediction
 
     #predict a single example
     def _predict(self, pos_bow,neg_bow, sentiment):
@@ -219,10 +255,10 @@ else:
 
 
 
-    #posscore = accuracy_score(posPreds, posTrain["selected_text"].to_numpy())
-    #negscore = accuracy_score(negPreds, negTrain["selected_text"].to_numpy())
-    #neutralscore = accuracy_score(neutralPreds, neutralTrain["selected_text"].to_numpy())
-    #print("Total Score:", (posscore+negscore+neutralscore)/3)
-    #print("neg:", negscore, "pos:", posscore, "neut:", neutralscore)
+    posscore = accuracy_score(posPreds, posTrain["selected_text"].to_numpy())
+    negscore = accuracy_score(negPreds, negTrain["selected_text"].to_numpy())
+    neutralscore = accuracy_score(neutralPreds, neutralTrain["selected_text"].to_numpy())
+    print("Total Score:", (posscore+negscore+neutralscore)/3)
+    print("neg:", negscore, "pos:", posscore, "neut:", neutralscore)
 
 
