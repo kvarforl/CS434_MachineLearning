@@ -15,5 +15,9 @@ The project in this directory classifies movie reviews as positive or negative u
 
 This directory contains project code for a decision tree ensemble to predict election results from US county statistics. It contains code that generates a basic **Decision Tree Classifier**, in addition to a **Random Forest** generator, and an implementation **AdaBoost**. 
 
+### [implementation4/](https://github.com/kvarforl/CS434_MachineLearning/tree/master/implementation4)
+
+This project explores **k-means clustering** and **dimension reduciton (PCA)** algorithms for identifying what activity (standing, running, sitting, etc...) a Sumsung Galaxy S3 phone detects its user is participating in based off of its accelerometer and gyros data.
+
 Code authored by me and [Aiden Nelson](https://github.com/Aidenjn) unless otherwise attributed.
 
